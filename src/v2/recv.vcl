@@ -47,9 +47,9 @@ if (req.request == "HEAD" || req.request == "GET" || req.request == "FASTLYPURGE
     }
 
     if (req.http.X-IIIF-Format != "jpg") {
-      set req.http.X-Fastly-IO-Format = "pjpg";
-    } else {
       error 400;
+    } else {
+      set req.http.X-Fastly-IO-Format = "pjpg";
     }
   } else {
     # Not a IIIF request
