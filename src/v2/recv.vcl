@@ -67,4 +67,6 @@ if (req.request == "HEAD" || req.request == "GET" || req.request == "FASTLYPURGE
     # Image request
     set req.url = req.url "?format=" req.http.X-Fastly-IO-Format;
   }
+
+  set req.http.X-Fastly-IO-URL = req.url;
 }

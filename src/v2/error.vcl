@@ -9,7 +9,6 @@ if (obj.status == 900) {
 
   if (req.http.Fastly-Debug) {
     set obj.http.X-Fastly-IO-Info = req.http.X-Fastly-IO-Info;
-    set obj.http.X-Fastly-IO-URL = req.http.X-Fastly-IO-URL;
   }
 
   synthetic {"{
