@@ -56,18 +56,42 @@ describe('Image request', () => {
 
     describe('Format', () => {
 
-        describe('Valid', () => {
+        describe('Supported', () => {
 
             test.each([
                 [
-                    'JPEG',
                     'jpg',
-                    {
-                        'format': 'pjpg'
-                    }
+                    'pjpg'
                 ]
-            ])('%s', (name, extension, parameters, done) => {
-                ok({'format': extension}, parameters, done);
+            ])('%s', (extension, format, done) => {
+                ok({'format': extension}, {'format': format}, done);
+            });
+
+        });
+
+        describe('Unsupported', () => {
+
+            test.each([
+                [
+                    'gif'
+                ],
+                [
+                    'jp2'
+                ],
+                [
+                    'pdf'
+                ],
+                [
+                    'png'
+                ],
+                [
+                    'tif'
+                ],
+                [
+                    'webp'
+                ]
+            ])('%s', (extension, done) => {
+                badRequest({'format': extension}, done);
             });
 
         });
@@ -76,14 +100,9 @@ describe('Image request', () => {
 
             test.each([
                 [
-                    'PNG',
-                    'png'
-                ],
-                [
-                    'Unknown',
                     'foo'
                 ]
-            ])('%s', (name, extension, done) => {
+            ])('%s', (extension, done) => {
                 badRequest({'format': extension}, done);
             });
 
