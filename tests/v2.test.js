@@ -1,14 +1,15 @@
 import expect from 'expect';
-import request from 'request';
+import request from 'request-promise-native';
 
 const {URLSearchParams} = require('url');
 
 const baseUrl = 'https://iotest--iiif.elifesciences.org/';
 const http = request.defaults({
-    'baseUrl': baseUrl,
-    'headers': {
+    baseUrl: baseUrl,
+    headers: {
         'Fastly-Debug': '1'
-    }
+    },
+    resolveWithFullResponse: true
 });
 
 beforeAll(() => {
@@ -31,27 +32,27 @@ const imageUri = (parts) => {
 
 describe('Image request', () => {
 
-    const ok = (iiifParameters, ioParameters, done) => {
+    const ok = (iiifParameters, ioParameters = {}) => {
         if (!ioParameters['format']) {
             ioParameters['format'] = 'pjpg';
         }
 
         const ioQueryParameters = new URLSearchParams(ioParameters);
 
-        http(imageUri(iiifParameters), (error, response) => {
-            expect(response.statusCode).toBe(200);
-            expect(response.headers['x-fastly-io-url']).toBe(`/lax/10627%2Felife-10627-fig1-v1.jpg?${ioQueryParameters.toString()}`);
+        expect.assertions(2);
 
-            done();
-        });
+        return http.get(imageUri(iiifParameters))
+            .then((response) => {
+                expect(response.statusCode).toBe(200);
+                expect(response.headers['x-fastly-io-url']).toBe(`/lax/10627%2Felife-10627-fig1-v1.jpg?${ioQueryParameters.toString()}`);
+            });
     };
 
-    const badRequest = (iiifParameters, done) => {
-        http(imageUri(iiifParameters), (error, response) => {
-            expect(response.statusCode).toBe(400);
+    const badRequest = (iiifParameters) => {
+        expect.assertions(1);
 
-            done();
-        });
+        return http.get(imageUri(iiifParameters))
+            .catch((exception) => expect(exception).toHaveProperty('statusCode', 400));
     };
 
     describe('Region', () => {
@@ -62,9 +63,7 @@ describe('Image request', () => {
                 [
                     'full'
                 ]
-            ])('%s', (value, done) => {
-                ok({'size': value}, {}, done);
-            });
+            ])('%s', (value) => ok({'size': value}));
 
         });
 
@@ -83,9 +82,7 @@ describe('Image request', () => {
                 [
                     'pct:1,2,3,4'
                 ]
-            ])('%s', (name, done) => {
-                badRequest({'region': name}, done);
-            });
+            ])('%s', (name) => badRequest({'region': name}));
 
         });
 
@@ -113,10 +110,7 @@ describe('Image request', () => {
                 [
                     'foo'
                 ]
-            ])('%s', (name, done) => {
-                badRequest({'quality': name}, done);
-            });
-
+            ])('%s', (name) => badRequest({'quality': name}));
         });
 
     });
@@ -129,9 +123,7 @@ describe('Image request', () => {
                 [
                     'full'
                 ]
-            ])('%s', (value, done) => {
-                ok({'size': value}, {}, done);
-            });
+            ])('%s', (value) => ok({'size': value}));
 
         });
 
@@ -165,9 +157,7 @@ describe('Image request', () => {
                 [
                     '!90'
                 ]
-            ])('%s', (name, done) => {
-                badRequest({'quality': name}, done);
-            });
+            ])('%s', (name) => badRequest({'quality': name}));
 
         });
 
@@ -189,9 +179,7 @@ describe('Image request', () => {
                 [
                     'foo'
                 ]
-            ])('%s', (name, done) => {
-                badRequest({'quality': name}, done);
-            });
+            ])('%s', (name) => badRequest({'quality': name}));
 
         });
 
@@ -205,9 +193,7 @@ describe('Image request', () => {
                 [
                     '0'
                 ]
-            ])('%s', (value, done) => {
-                ok({'rotation': value}, {}, done);
-            });
+            ])('%s', (value) => ok({'rotation': value}));
 
         });
 
@@ -244,9 +230,7 @@ describe('Image request', () => {
                 [
                     '!90'
                 ]
-            ])('%s', (name, done) => {
-                badRequest({'quality': name}, done);
-            });
+            ])('%s', (name) => badRequest({'quality': name}));
 
         });
 
@@ -262,9 +246,7 @@ describe('Image request', () => {
                 [
                     'foo'
                 ]
-            ])('%s', (name, done) => {
-                badRequest({'quality': name}, done);
-            });
+            ])('%s', (name) => badRequest({'quality': name}));
 
         });
 
@@ -278,9 +260,7 @@ describe('Image request', () => {
                 [
                     'default'
                 ]
-            ])('%s', (name, done) => {
-                ok({'quality': name}, {}, done);
-            });
+            ])('%s', (name) => ok({'quality': name}));
 
         });
 
@@ -296,9 +276,7 @@ describe('Image request', () => {
                 [
                     'bitonal'
                 ]
-            ])('%s', (name, done) => {
-                badRequest({'quality': name}, done);
-            });
+            ])('%s', (name) => badRequest({'quality': name}));
 
         });
 
@@ -308,9 +286,7 @@ describe('Image request', () => {
                 [
                     'foo'
                 ]
-            ])('%s', (name, done) => {
-                badRequest({'quality': name}, done);
-            });
+            ])('%s', (name) => badRequest({'quality': name}));
 
         });
 
@@ -325,9 +301,7 @@ describe('Image request', () => {
                     'jpg',
                     'pjpg'
                 ]
-            ])('%s', (extension, format, done) => {
-                ok({'format': extension}, {'format': format}, done);
-            });
+            ])('%s', (extension, format) => ok({'format': extension}, {'format': format}));
 
         });
 
@@ -352,9 +326,7 @@ describe('Image request', () => {
                 [
                     'webp'
                 ]
-            ])('%s', (extension, done) => {
-                badRequest({'format': extension}, done);
-            });
+            ])('%s', (extension) => badRequest({'format': extension}));
 
         });
 
@@ -364,9 +336,7 @@ describe('Image request', () => {
                 [
                     'foo'
                 ]
-            ])('%s', (extension, done) => {
-                badRequest({'format': extension}, done);
-            });
+            ])('%s', (extension) => badRequest({'format': extension}));
 
         });
 
@@ -391,7 +361,7 @@ describe('Info request', () => {
                 'height': 2082
             }
         ]
-    ])('%s/info.json', (path, json, done) => {
+    ])('%s/info.json', (path, json) => {
         json = Object.assign({
             '@context': 'http://iiif.io/api/image/2/context.json',
             '@id': baseUrl.concat(path),
@@ -406,12 +376,13 @@ describe('Info request', () => {
             ]
         }, json);
 
-        http(`${path}/info.json`, (error, response, body) => {
-            expect(response.statusCode).toBe(200);
-            expect(JSON.parse(body)).toEqual(json);
+        expect.assertions(2);
 
-            done();
-        });
+        return http.get(`${path}/info.json`)
+            .then((response) => {
+                expect(response.statusCode).toBe(200);
+                expect(JSON.parse(response.body)).toEqual(json);
+            });
     });
 
 });
