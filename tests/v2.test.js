@@ -54,6 +54,268 @@ describe('Image request', () => {
         });
     };
 
+    describe('Region', () => {
+
+        describe('Supported', () => {
+
+            test.each([
+                [
+                    'full'
+                ]
+            ])('%s', (value, done) => {
+                ok({'size': value}, {}, done);
+            });
+
+        });
+
+        describe('Unsupported', () => {
+
+            test.each([
+                [
+                    'square'
+                ],
+                [
+                    '0,0,100,100'
+                ],
+                [
+                    '100,100,100,100'
+                ],
+                [
+                    'pct:1,2,3,4'
+                ]
+            ])('%s', (name, done) => {
+                badRequest({'region': name}, done);
+            });
+
+        });
+
+        describe('Invalid', () => {
+
+            test.each([
+                [
+                    '-1,-1,100,100'
+                ],
+                [
+                    '0,0,-1,-1'
+                ],
+                [
+                    'pct:1'
+                ],
+                [
+                    'pct:1,2'
+                ],
+                [
+                    'pct:1,2,3'
+                ],
+                [
+                    'pct:1,2,3,0'
+                ],
+                [
+                    'foo'
+                ]
+            ])('%s', (name, done) => {
+                badRequest({'quality': name}, done);
+            });
+
+        });
+
+    });
+
+    describe('Size', () => {
+
+        describe('Supported', () => {
+
+            test.each([
+                [
+                    'full'
+                ]
+            ])('%s', (value, done) => {
+                ok({'size': value}, {}, done);
+            });
+
+        });
+
+        describe('Unsupported', () => {
+
+            test.each([
+                [
+                    'max'
+                ],
+                [
+                    '100,'
+                ],
+                [
+                    ',100'
+                ],
+                [
+                    '100,100'
+                ],
+                [
+                    '!100,100'
+                ],
+                [
+                    'pct:50'
+                ],
+                [
+                    'pct:100'
+                ],
+                [
+                    '!1'
+                ],
+                [
+                    '!90'
+                ]
+            ])('%s', (name, done) => {
+                badRequest({'quality': name}, done);
+            });
+
+        });
+
+        describe('Invalid', () => {
+
+            test.each([
+                [
+                    '0,0'
+                ],
+                [
+                    '-1,-1'
+                ],
+                [
+                    'pct:0'
+                ],
+                [
+                    'pct:101'
+                ],
+                [
+                    'foo'
+                ]
+            ])('%s', (name, done) => {
+                badRequest({'quality': name}, done);
+            });
+
+        });
+
+    });
+
+    describe('Rotation', () => {
+
+        describe('Supported', () => {
+
+            test.each([
+                [
+                    '0'
+                ]
+            ])('%s', (value, done) => {
+                ok({'rotation': value}, {}, done);
+            });
+
+        });
+
+        describe('Unsupported', () => {
+
+            test.each([
+                [
+                    '90'
+                ],
+                [
+                    '180'
+                ],
+                [
+                    '270'
+                ],
+                [
+                    '360'
+                ],
+                [
+                    '1'
+                ],
+                [
+                    '1.5'
+                ],
+                [
+                    '!0'
+                ],
+                [
+                    '!1'
+                ],
+                [
+                    '!1.5'
+                ],
+                [
+                    '!90'
+                ]
+            ])('%s', (name, done) => {
+                badRequest({'quality': name}, done);
+            });
+
+        });
+
+        describe('Invalid', () => {
+
+            test.each([
+                [
+                    '-0'
+                ],
+                [
+                    '-90'
+                ],
+                [
+                    'foo'
+                ]
+            ])('%s', (name, done) => {
+                badRequest({'quality': name}, done);
+            });
+
+        });
+
+    });
+
+    describe('Quality', () => {
+
+        describe('Supported', () => {
+
+            test.each([
+                [
+                    'default'
+                ]
+            ])('%s', (name, done) => {
+                ok({'quality': name}, {}, done);
+            });
+
+        });
+
+        describe('Unsupported', () => {
+
+            test.each([
+                [
+                    'color'
+                ],
+                [
+                    'gray'
+                ],
+                [
+                    'bitonal'
+                ]
+            ])('%s', (name, done) => {
+                badRequest({'quality': name}, done);
+            });
+
+        });
+
+        describe('Invalid', () => {
+
+            test.each([
+                [
+                    'foo'
+                ]
+            ])('%s', (name, done) => {
+                badRequest({'quality': name}, done);
+            });
+
+        });
+
+    });
+
     describe('Format', () => {
 
         describe('Supported', () => {
