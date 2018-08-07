@@ -1,8 +1,15 @@
 import expect from 'expect';
 import request from 'request';
 
+const {URLSearchParams} = require('url');
+
 const baseUrl = 'https://iotest--iiif.elifesciences.org/';
-const http = request.defaults({'baseUrl': baseUrl});
+const http = request.defaults({
+    'baseUrl': baseUrl,
+    'headers': {
+        'Fastly-Debug': '1'
+    }
+});
 
 beforeAll(() => {
     console.log('some setup will be done here');
@@ -22,42 +29,64 @@ const imageUri = (parts) => {
     return `${parts['prefix']}/${parts['identifier']}/${parts['region']}/${parts['size']}/${parts['rotation']}/${parts['quality']}.${parts['format']}`;
 };
 
-describe('Formats', () => {
+describe('Image request', () => {
 
-    describe('Valid', () => {
+    const ok = (iiifParameters, ioParameters, done) => {
+        if (!ioParameters['format']) {
+            ioParameters['format'] = 'pjpg';
+        }
 
-        test.each([
-            [
-                'JPEG',
-                'jpg'
-            ]
-        ])('%s', (name, extension, done) => {
-            http(imageUri({'format': extension}), (error, response, body) => {
-                expect(response.statusCode).toBe(200);
+        const ioQueryParameters = new URLSearchParams(ioParameters);
 
-                done();
+        http(imageUri(iiifParameters), (error, response) => {
+            expect(response.statusCode).toBe(200);
+            expect(response.headers['x-fastly-io-url']).toBe(`/lax/10627%2Felife-10627-fig1-v1.jpg?${ioQueryParameters.toString()}`);
+
+            done();
+        });
+    };
+
+    const badRequest = (iiifParameters, done) => {
+        http(imageUri(iiifParameters), (error, response) => {
+            expect(response.statusCode).toBe(400);
+
+            done();
+        });
+    };
+
+    describe('Format', () => {
+
+        describe('Valid', () => {
+
+            test.each([
+                [
+                    'JPEG',
+                    'jpg',
+                    {
+                        'format': 'pjpg'
+                    }
+                ]
+            ])('%s', (name, extension, parameters, done) => {
+                ok({'format': extension}, parameters, done);
             });
+
         });
 
-    });
+        describe('Invalid', () => {
 
-    describe('Invalid', () => {
-
-        test.each([
-            [
-                'PNG',
-                'png'
-            ],
-            [
-                'Unknown',
-                'foo'
-            ]
-        ])('%s', (name, extension, done) => {
-            http(imageUri({'format': extension}), (error, response, body) => {
-                expect(response.statusCode).toBe(400);
-
-                done();
+            test.each([
+                [
+                    'PNG',
+                    'png'
+                ],
+                [
+                    'Unknown',
+                    'foo'
+                ]
+            ])('%s', (name, extension, done) => {
+                badRequest({'format': extension}, done);
             });
+
         });
 
     });
