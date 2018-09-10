@@ -98,249 +98,169 @@ describe('Image request', () => {
 
   describe('Region', () => {
     describe('Supported', () => {
-      test.each([
-        [
-          'full',
-        ],
-      ])('%s', value => ok({ region: value }));
+      const regions = [
+        'full',
+      ];
+
+      test.each(regions.map(region => [region]))('%s', region => ok({ region }));
     });
 
     describe('Unsupported', () => {
-      test.each([
-        [
-          'square',
-        ],
-        [
-          '0,0,100,100',
-        ],
-        [
-          '100,100,100,100',
-        ],
-        [
-          'pct:1,2,3,4',
-        ],
-      ])('%s', name => badRequest({ region: name }));
+      const regions = [
+        'square',
+        '0,0,100,100',
+        '100,100,100,100',
+        'pct:1,2,3,4',
+      ];
+
+      test.each(regions.map(region => [region]))('%s', region => badRequest({ region }));
     });
 
     describe('Invalid', () => {
-      test.each([
-        [
-          '-1,-1,100,100',
-        ],
-        [
-          '0,0,-1,-1',
-        ],
-        [
-          'pct:1',
-        ],
-        [
-          'pct:1,2',
-        ],
-        [
-          'pct:1,2,3',
-        ],
-        [
-          'pct:1,2,3,0',
-        ],
-        [
-          'foo',
-        ],
-      ])('%s', name => badRequest({ region: name }));
+      const regions = [
+        '-1,-1,100,100',
+        '0,0,-1,-1',
+        'pct:1,2',
+        'pct:1,2,3',
+        'pct:1,2,3,0',
+        'foo',
+      ];
+
+      test.each(regions.map(region => [region]))('%s', region => badRequest({ region }));
     });
   });
 
   describe('Size', () => {
     describe('Supported', () => {
-      test.each([
-        [
-          'full',
-        ],
-      ])('%s', value => ok({ size: value }));
+      const sizes = [
+        'full',
+      ];
+
+      test.each(sizes.map(size => [size]))('%s', size => ok({ size }));
     });
 
     describe('Unsupported', () => {
-      test.each([
-        [
-          'max',
-        ],
-        [
-          '100,',
-        ],
-        [
-          ',100',
-        ],
-        [
-          '100,100',
-        ],
-        [
-          '!100,100',
-        ],
-        [
-          'pct:50',
-        ],
-        [
-          'pct:100',
-        ],
-        [
-          '!1',
-        ],
-        [
-          '!90',
-        ],
-      ])('%s', name => badRequest({ size: name }));
+      const sizes = [
+        'max',
+        '100,',
+        ',100',
+        '100,100',
+        '!100,100',
+        'pct:50',
+        'pct:100',
+        '!1',
+        '!90',
+      ];
+
+      test.each(sizes.map(size => [size]))('%s', size => badRequest({ size }));
     });
 
     describe('Invalid', () => {
-      test.each([
-        [
-          '0,0',
-        ],
-        [
-          '-1,-1',
-        ],
-        [
-          'pct:0',
-        ],
-        [
-          'pct:101',
-        ],
-        [
-          'foo',
-        ],
-      ])('%s', name => badRequest({ size: name }));
+      const sizes = [
+        '0,0',
+        '-1,-1',
+        'pct:0',
+        'pct:101',
+        'foo',
+      ];
+
+      test.each(sizes.map(size => [size]))('%s', size => badRequest({ size }));
     });
   });
 
   describe('Rotation', () => {
     describe('Supported', () => {
-      test.each([
-        [
-          '0',
-        ],
-      ])('%s', value => ok({ rotation: value }));
+      const rotations = [
+        '0',
+      ];
+
+      test.each(rotations.map(rotation => [rotation]))('%s', rotation => ok({ rotation }));
     });
 
     describe('Unsupported', () => {
-      test.each([
-        [
-          '90',
-        ],
-        [
-          '180',
-        ],
-        [
-          '270',
-        ],
-        [
-          '360',
-        ],
-        [
-          '1',
-        ],
-        [
-          '1.5',
-        ],
-        [
-          '!0',
-        ],
-        [
-          '!1',
-        ],
-        [
-          '!1.5',
-        ],
-        [
-          '!90',
-        ],
-      ])('%s', name => badRequest({ rotation: name }));
+      const rotations = [
+        '90',
+        '180',
+        '270',
+        '360',
+        '1',
+        '1.5',
+        '!0',
+        '!1',
+        '!1.5',
+        '!90',
+      ];
+
+      test.each(rotations.map(rotation => [rotation]))('%s', rotation => badRequest({ rotation }));
     });
 
     describe('Invalid', () => {
-      test.each([
-        [
-          '-0',
-        ],
-        [
-          '-90',
-        ],
-        [
-          'foo',
-        ],
-      ])('%s', name => badRequest({ rotation: name }));
+      const rotations = [
+        '-0',
+        '-90',
+        'foo',
+      ];
+
+      test.each(rotations.map(rotation => [rotation]))('%s', rotation => badRequest({ rotation }));
     });
   });
 
   describe('Quality', () => {
     describe('Supported', () => {
-      test.each([
-        [
-          'default',
-        ],
-      ])('%s', name => ok({ quality: name }));
+      const qualities = [
+        'default',
+      ];
+
+      test.each(qualities.map(quality => [quality]))('%s', quality => ok({ quality }));
     });
 
     describe('Unsupported', () => {
-      test.each([
-        [
-          'color',
-        ],
-        [
-          'gray',
-        ],
-        [
-          'bitonal',
-        ],
-      ])('%s', name => badRequest({ quality: name }));
+      const qualities = [
+        'bitonal',
+        'color',
+        'gray',
+      ];
+
+      test.each(qualities.map(quality => [quality]))('%s', quality => badRequest({ quality }));
     });
 
     describe('Invalid', () => {
-      test.each([
-        [
-          'foo',
-        ],
-      ])('%s', name => badRequest({ quality: name }));
+      const qualities = [
+        'foo',
+      ];
+
+      test.each(qualities.map(quality => [quality]))('%s', quality => badRequest({ quality }));
     });
   });
 
   describe('Format', () => {
     describe('Supported', () => {
-      test.each([
-        [
-          'jpg',
-          'pjpg',
-        ],
-      ])('%s', (extension, format) => ok({ format: extension }, { format }));
+      const formats = {
+        jpg: 'pjpg',
+      };
+
+      test.each(Object.entries(formats))('%s', (iiifFormat, ioFormat) => ok({ format: iiifFormat }, { format: ioFormat }));
     });
 
     describe('Unsupported', () => {
-      test.each([
-        [
-          'gif',
-        ],
-        [
-          'jp2',
-        ],
-        [
-          'pdf',
-        ],
-        [
-          'png',
-        ],
-        [
-          'tif',
-        ],
-        [
-          'webp',
-        ],
-      ])('%s', extension => badRequest({ format: extension }));
+      const formats = [
+        'gif',
+        'jp2',
+        'pdf',
+        'png',
+        'tif',
+        'webp',
+      ];
+
+      test.each(formats.map(format => [format]))('%s', format => badRequest({ format }));
     });
 
     describe('Invalid', () => {
-      test.each([
-        [
-          'foo',
-        ],
-      ])('%s', extension => badRequest({ format: extension }));
+      const formats = [
+        'foo',
+      ];
+
+      test.each(formats.map(format => [format]))('%s', format => badRequest({ format }));
     });
   });
 });
@@ -355,7 +275,7 @@ describe('Info request', () => {
         height: 2241,
       },
     ],
-  ])('%s/info.json', (prefix, identifier, requiredJson) => {
+  ])('%s%s/info.json', (prefix, identifier, requiredJson) => {
     const json = Object.assign({
       '@context': 'http://iiif.io/api/image/2/context.json',
       '@id': baseUrl.concat(prefix, identifier),
