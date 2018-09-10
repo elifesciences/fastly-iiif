@@ -1,9 +1,20 @@
 import expect from 'expect';
+import fs from 'promise-fs'
+import path from 'path';
 import request from 'request-promise-native';
 
 const {URLSearchParams} = require('url');
 
-const baseUrl = 'https://iotest--iiif.elifesciences.org/';
+const api = request.defaults({
+    'baseUrl': 'https://api.fastly.com/service/6lQpb69X5Qt9YVt2OIMiGG/',
+    'headers': {
+        'Accept': 'application/json',
+        'Fastly-Key': process.env.FASTLY_API_KEY
+    }
+});
+
+const domain = 'iotest--iiif.elifesciences.org';
+const baseUrl = `https://${domain}/`;
 const http = request.defaults({
     baseUrl: baseUrl,
     headers: {
@@ -12,13 +23,44 @@ const http = request.defaults({
     resolveWithFullResponse: true
 });
 
-beforeAll(() => {
-    console.log('some setup will be done here');
+const source = path.resolve(__dirname, '../src/v2');
+
+beforeAll(async () => {
+    const version = await api.post('version')
+        .then((response) => JSON.parse(response)['number']);
+
+    let config = [
+        api.post(`version/${version}/backend`).form({
+            hostname: 'prod-elife-published.s3.amazonaws.com',
+            name: 'bucket',
+            shield: 'dca-dc-us',
+        }),
+        api.post(`version/${version}/domain`).form({
+            name: domain,
+        })
+    ];
+
+    ['deliver', 'error', 'fetch', 'miss', 'pass', 'recv'].forEach((name) => {
+        config.push(
+            fs.readFile(`${source}/${name}.vcl`)
+                .then((contents) => {
+                    api.post(`version/${version}/snippet`).form({
+                        name: name,
+                        dynamic: 0,
+                        type: name,
+                        content: contents
+                    })
+                })
+        );
+    });
+
+    return Promise.all(config)
+        .then(() => api.put(`version/${version}/activate`));
 });
 
 const imageUri = (parts) => {
     parts = Object.assign({
-        'prefix': 'lax',
+        'prefix': 'articles',
         'identifier': '10627%2Felife-10627-fig1-v1.jpg',
         'region': 'full',
         'size': 'full',
@@ -44,7 +86,7 @@ describe('Image request', () => {
         return http.get(imageUri(iiifParameters))
             .then((response) => {
                 expect(response.statusCode).toBe(200);
-                expect(response.headers['x-fastly-io-url']).toBe(`/lax/10627%2Felife-10627-fig1-v1.jpg?${ioQueryParameters.toString()}`);
+                expect(response.headers['x-fastly-io-url']).toBe(`/articles/10627%2Felife-10627-fig1-v1.jpg?${ioQueryParameters.toString()}`);
             });
     };
 
@@ -348,19 +390,19 @@ describe('Info request', () => {
 
     test.each([
         [
-            'lax/10627%2Felife-10627-fig1-v1.jpg',
+            'articles/10627%2Felife-10627-fig1-v1.jpg',
             {
                 'width': 4473,
                 'height': 2241
             }
-        ],
-        [
+        ]
+        /*[
             'journal-cms/subjects%2F2018-03%2Felife-sciences-physics-living-systems-illustration.jpg',
             {
                 'width': 7016,
                 'height': 2082
             }
-        ]
+        ]*/
     ])('%s/info.json', (path, json) => {
         json = Object.assign({
             '@context': 'http://iiif.io/api/image/2/context.json',
