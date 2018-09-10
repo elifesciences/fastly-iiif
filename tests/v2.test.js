@@ -45,7 +45,7 @@ beforeAll(async () => {
       fs.readFile(`${source}/${name}.vcl`)
         .then((contents) => {
           api.post(`version/${version}/snippet`).form({
-            name,
+            name: `IIIF ${name}`,
             dynamic: 0,
             type: name,
             content: contents,
