@@ -102,7 +102,7 @@ describe('Image request', () => {
         [
           'full',
         ],
-      ])('%s', value => ok({ size: value }));
+      ])('%s', value => ok({ region: value }));
     });
 
     describe('Unsupported', () => {
@@ -145,7 +145,7 @@ describe('Image request', () => {
         [
           'foo',
         ],
-      ])('%s', name => badRequest({ quality: name }));
+      ])('%s', name => badRequest({ region: name }));
     });
   });
 
@@ -187,7 +187,7 @@ describe('Image request', () => {
         [
           '!90',
         ],
-      ])('%s', name => badRequest({ quality: name }));
+      ])('%s', name => badRequest({ size: name }));
     });
 
     describe('Invalid', () => {
@@ -207,7 +207,7 @@ describe('Image request', () => {
         [
           'foo',
         ],
-      ])('%s', name => badRequest({ quality: name }));
+      ])('%s', name => badRequest({ size: name }));
     });
   });
 
@@ -252,7 +252,7 @@ describe('Image request', () => {
         [
           '!90',
         ],
-      ])('%s', name => badRequest({ quality: name }));
+      ])('%s', name => badRequest({ rotation: name }));
     });
 
     describe('Invalid', () => {
@@ -266,7 +266,7 @@ describe('Image request', () => {
         [
           'foo',
         ],
-      ])('%s', name => badRequest({ quality: name }));
+      ])('%s', name => badRequest({ rotation: name }));
     });
   });
 
