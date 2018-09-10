@@ -74,9 +74,9 @@ const imageUri = (originalParts) => {
 
 describe('Image request', () => {
   const ok = (iiifParameters, requestedIoParameters = {}) => {
-    const ioParameters = Object.assign(requestedIoParameters, {
+    const ioParameters = Object.assign({
       format: 'pjpg',
-    });
+    }, requestedIoParameters);
 
     const ioQueryParameters = new URLSearchParams(ioParameters);
 
