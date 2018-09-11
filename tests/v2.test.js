@@ -39,7 +39,7 @@ beforeAll(async () => {
     }),
     api.post(`version/${version}/condition`).form({
       name: 'cats-prefix',
-      statement: 'req.http.X-IIIF-Prefix == "cats"',
+      statement: 'req.http.X-IIIF-Prefix == "kittehs"',
       type: 'REQUEST',
     }).then(() => api.post(`version/${version}/header`).form({
       name: 'cats-prefix',
@@ -297,7 +297,7 @@ describe('Info request', () => {
       },
     ],
     [
-      '/cats',
+      '/kittehs',
       'pop6.jpg',
       {
         width: 4288,
@@ -305,7 +305,7 @@ describe('Info request', () => {
       },
     ],
     [
-      '/cats',
+      '/kittehs',
       'more%2Fcat-manipulating.jpg',
       {
         width: 3264,
