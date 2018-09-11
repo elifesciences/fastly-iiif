@@ -7,14 +7,14 @@ import uuid from 'uuid/v1';
 const { URLSearchParams } = require('url');
 
 const api = request.defaults({
-  baseUrl: 'https://api.fastly.com/service/6lQpb69X5Qt9YVt2OIMiGG/',
+  baseUrl: `https://api.fastly.com/service/${process.env.FASTLY_SERVICE_ID}/`,
   headers: {
     Accept: 'application/json',
     'Fastly-Key': process.env.FASTLY_API_KEY,
   },
 });
 
-const domain = 'iotest--iiif.elifesciences.org';
+const domain = process.env.FASTLY_DOMAIN;
 const baseUrl = `https://${domain}`;
 const http = request.defaults({
   baseUrl,
@@ -33,7 +33,7 @@ beforeAll(async () => {
 
   const config = [
     api.post(`version/${version}/backend`).form({
-      hostname: 'fastly-iiif-test.s3.amazonaws.com',
+      hostname: `${process.env.S3_BUCKET_NAME}.s3.amazonaws.com`,
       name: 'bucket',
       shield: 'dca-dc-us',
     }),
