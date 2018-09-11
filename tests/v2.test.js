@@ -1,6 +1,6 @@
 import expect from 'expect';
 import fs from 'promise-fs';
-import path from 'path';
+import pathTool from 'path';
 import request from 'request-promise-native';
 import uuid from 'uuid/v1';
 
@@ -25,7 +25,7 @@ const http = request.defaults({
   resolveWithFullResponse: true,
 });
 
-const source = path.resolve(__dirname, '../src');
+const source = pathTool.resolve(__dirname, '../src');
 
 beforeAll(async () => {
   const version = await api.post('version')
@@ -87,7 +87,7 @@ const imageUri = (originalParts) => {
 };
 
 describe('Image request', () => {
-  const ok = (iiifParameters, requestedIoParameters = {}) => {
+  const ok = (iiifParameters, requestedIoParameters = {}, method = 'GET') => {
     const ioParameters = Object.assign({
       format: 'pjpg',
     }, requestedIoParameters);
@@ -96,19 +96,59 @@ describe('Image request', () => {
 
     expect.assertions(2);
 
-    return http.get(imageUri(iiifParameters))
+    return http({
+      method,
+      uri: imageUri(iiifParameters),
+    })
       .then((response) => {
         expect(response.statusCode).toBe(200);
         expect(response.headers['x-fastly-io-url']).toBe(`/pug-life.jpg?${ioQueryParameters.toString()}`);
       });
   };
 
-  const badRequest = (iiifParameters) => {
+  const error = (iiifParameters, statusCode, method = 'GET') => {
     expect.assertions(1);
 
-    return http.get(imageUri(iiifParameters))
-      .catch(exception => expect(exception).toHaveProperty('statusCode', 400));
+    return http({
+      method,
+      uri: imageUri(iiifParameters),
+    })
+      .catch(exception => expect(exception).toHaveProperty('statusCode', statusCode));
   };
+
+  const badRequest = iiifParameters => error(iiifParameters, 400);
+
+  describe('Methods', () => {
+    describe('Supported', () => {
+      const methods = [
+        'GET',
+        'HEAD',
+      ];
+
+      test.each(methods.map(method => [method]))('%s', method => ok({}, {}, method));
+    });
+
+    describe('Unsupported', () => {
+      const methods = [
+        'DELETE',
+        'OPTIONS',
+        'PATCH',
+        'POST',
+        'PUT',
+        'TRACE',
+      ];
+
+      test.each(methods.map(method => [method]))('%s', method => error({}, 405, method));
+    });
+
+    describe('Invalid', () => {
+      const methods = [
+        'FOO',
+      ];
+
+      test.each(methods.map(method => [method]))('%s', method => error({}, 405, method));
+    });
+  });
 
   describe('Region', () => {
     describe('Supported', () => {
@@ -327,5 +367,50 @@ describe('Info request', () => {
         expect(response.statusCode).toBe(200);
         expect(JSON.parse(response.body)).toEqual(json);
       });
+  });
+});
+
+describe('Non-image request', () => {
+  const paths = [
+    'foo.txt/info.json',
+    'foo.txt/full/full/0/default.jpg',
+  ];
+
+  test.each(paths.map(path => [path]))('%s', (path) => {
+    expect.assertions(1);
+
+    return http.get(path)
+      .catch(exception => expect(exception).toHaveProperty('statusCode', 404));
+  });
+});
+
+describe('Unknown images', () => {
+  const paths = [
+    'foo.jpg/info.json',
+    'foo.jpg/full/full/0/default.jpg',
+  ];
+
+  test.each(paths.map(path => [path]))('%s', (path) => {
+    expect.assertions(1);
+
+    return http.get(path)
+      .catch(exception => expect(exception).toHaveProperty('statusCode', 404));
+  });
+});
+
+describe('Unknown paths', () => {
+  const paths = [
+    '',
+    'foo',
+    'foo.jpg',
+    'foo.jpg/full/0/default.jpg',
+    'foo.jpg/full/full/0/default',
+  ];
+
+  test.each(paths.map(path => [path]))('%s', (path) => {
+    expect.assertions(1);
+
+    return http.get(path)
+      .catch(exception => expect(exception).toHaveProperty('statusCode', 404));
   });
 });
