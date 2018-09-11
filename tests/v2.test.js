@@ -25,13 +25,13 @@ const http = request.defaults({
   resolveWithFullResponse: true,
 });
 
-const source = path.resolve(__dirname, '../src/v2');
+const source = path.resolve(__dirname, '../src');
 
 beforeAll(async () => {
   const version = await api.post('version')
     .then(response => JSON.parse(response).number);
 
-  const config = [
+  await Promise.all([
     api.post(`version/${version}/backend`).form({
       hostname: `${process.env.S3_BUCKET_NAME}.s3.amazonaws.com`,
       name: 'bucket',
@@ -59,24 +59,17 @@ beforeAll(async () => {
       dst: 'http.Vary',
       src: '"X-Test-Run"',
     }),
-  ];
+    fs.readFile(`${source}/v2.vcl`)
+      .then((contents) => {
+        api.post(`version/${version}/vcl`).form({
+          name: 'IIIF v2',
+          content: contents,
+          main: true,
+        });
+      }),
+  ]);
 
-  ['deliver', 'error', 'fetch', 'miss', 'pass', 'recv'].forEach((name) => {
-    config.push(
-      fs.readFile(`${source}/${name}.vcl`)
-        .then((contents) => {
-          api.post(`version/${version}/snippet`).form({
-            name: `IIIF vcl_${name}`,
-            dynamic: 0,
-            type: name,
-            content: contents,
-          });
-        }),
-    );
-  });
-
-  return Promise.all(config)
-    .then(() => api.put(`version/${version}/activate`));
+  return api.put(`version/${version}/activate`);
 });
 
 const imageUri = (originalParts) => {
