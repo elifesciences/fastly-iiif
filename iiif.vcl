@@ -9,6 +9,7 @@ sub vcl_recv {
   }
 
   # Sanitise headers
+  set req.http.X-IIIF-Version = "2";
   unset req.http.X-IIIF-Info;
   unset req.http.X-IIIF-Prefix;
   unset req.http.X-IIIF-Identifier;
@@ -30,9 +31,29 @@ sub vcl_recv {
     set req.http.X-IIIF-Rotation = re.group.5;
     set req.http.X-IIIF-Quality = re.group.6;
     set req.http.X-IIIF-Format = re.group.7;
+  } else {
+    error 404 "Not a IIIF path";
+  }
 
-    # Set Fastly IO values
+  # Change request from IIIF to Fastly IO
 
+  set req.http.X-Fastly-Imageopto-Api = "fastly";
+  set req.url = "/" req.http.X-IIIF-Identifier;
+  if (req.http.X-IIIF-Prefix) {
+    set req.url = "/" req.http.X-IIIF-Prefix req.url;
+  }
+
+#FASTLY recv
+
+  if (req.http.X-IIIF-Version != "2") {
+    error 500 "Unknown IIIF version";
+  }
+
+  if (req.http.X-IIIF-Info) {
+    # Info request
+    set req.request = "HEAD";
+  } else {
+    # Image request
     if (req.http.X-IIIF-Region != "full") {
       error 400 "Invalid region";
     }
@@ -54,25 +75,6 @@ sub vcl_recv {
     } else {
       set req.http.X-Fastly-IO-Format = "pjpg";
     }
-  } else {
-    error 404 "Not a IIIF path";
-  }
-
-  # Change request from IIIF to Fastly IO
-
-  set req.http.X-Fastly-Imageopto-Api = "fastly";
-  set req.url = "/" req.http.X-IIIF-Identifier;
-  if (req.http.X-IIIF-Prefix) {
-    set req.url = "/" req.http.X-IIIF-Prefix req.url;
-  }
-
-#FASTLY recv
-
-  if (req.http.X-IIIF-Info) {
-    # Info request
-    set req.request = "HEAD";
-  } else {
-    # Image request
     set req.url = req.url "?format=" req.http.X-Fastly-IO-Format;
   }
 
@@ -121,6 +123,7 @@ sub vcl_miss {
     unset bereq.http.host;
     unset bereq.http.X-Fastly-IO-Format;
     unset bereq.http.X-Fastly-IO-URL;
+    unset bereq.http.X-IIIF-Version;
     unset bereq.http.X-IIIF-Info;
     unset bereq.http.X-IIIF-Prefix;
     unset bereq.http.X-IIIF-Identifier;
@@ -141,6 +144,7 @@ sub vcl_deliver {
 
   if (req.http.Fastly-Debug && req.http.X-IIIF-Identifier) {
     set resp.http.X-Fastly-IO-URL = req.http.X-Fastly-IO-URL;
+    set resp.http.X-IIIF-Version = req.http.X-IIIF-Version;
     set resp.http.X-IIIF-Prefix = req.http.X-IIIF-Prefix;
     set resp.http.X-IIIF-Identifier = req.http.X-IIIF-Identifier;
     if (!req.http.X-IIIF-Info) {
@@ -184,7 +188,7 @@ sub vcl_error {
     }
 
     synthetic {"{
-      "@context": "http://iiif.io/api/image/2/context.json",
+      "@context": "http://iiif.io/api/image/"} req.http.X-IIIF-Version {"/context.json",
       "@id": ""} if(req.http.Fastly-SSL, "https", "http") {"://"} req.http.Host "/" if(req.http.X-IIIF-Prefix, req.http.X-IIIF-Prefix "/", "") req.http.X-IIIF-Identifier {"",
       "protocol": "http://iiif.io/api/image",
       "profile": [
@@ -217,6 +221,7 @@ sub vcl_pass {
     unset bereq.http.host;
     unset bereq.http.X-Fastly-IO-Format;
     unset bereq.http.X-Fastly-IO-URL;
+    unset bereq.http.X-IIIF-Version;
     unset bereq.http.X-IIIF-Info;
     unset bereq.http.X-IIIF-Prefix;
     unset bereq.http.X-IIIF-Identifier;

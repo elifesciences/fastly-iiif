@@ -25,7 +25,7 @@ const http = request.defaults({
   resolveWithFullResponse: true,
 });
 
-const source = pathTool.resolve(__dirname, '../src');
+const root = pathTool.resolve(__dirname, '../');
 
 beforeAll(async () => {
   const version = await api.post('version')
@@ -59,10 +59,17 @@ beforeAll(async () => {
       dst: 'http.Vary',
       src: '"X-Test-Run"',
     }),
-    fs.readFile(`${source}/v2.vcl`)
+    api.post(`version/${version}/header`).form({
+      name: 'iiif-version',
+      type: 'request',
+      action: 'set',
+      dst: 'http.X-IIIF-Version',
+      src: 'if(req.http.X-Test-IIIF-Version, req.http.X-Test-IIIF-Version, req.http.X-IIIF-Version)',
+    }),
+    fs.readFile(`${root}/iiif.vcl`)
       .then((contents) => {
         api.post(`version/${version}/vcl`).form({
-          name: 'IIIF v2',
+          name: 'IIIF',
           content: contents,
           main: true,
         });
@@ -412,5 +419,20 @@ describe('Unknown paths', () => {
 
     return http.get(path)
       .catch(exception => expect(exception).toHaveProperty('statusCode', 404));
+  });
+});
+
+describe('Unknown versions', () => {
+  const paths = [
+    'foo',
+    '1',
+    '3',
+  ];
+
+  test.each(paths.map(version => [version]))('%s', (version) => {
+    expect.assertions(1);
+
+    return http.get(imageUri(), { headers: { 'X-Test-IIIF-Version': version } })
+      .catch(exception => expect(exception).toHaveProperty('statusCode', 500));
   });
 });
