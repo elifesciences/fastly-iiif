@@ -13,7 +13,7 @@ if (obj.status == 900) {
 
   synthetic {"{
     "@context": "http://iiif.io/api/image/2/context.json",
-    "@id": ""} if (req.http.Fastly-SSL, "https", "http") {"://"} req.http.Host req.http.X-IIIF-Prefix "/" req.http.X-IIIF-Identifier {"",
+    "@id": ""} if(req.http.Fastly-SSL, "https", "http") {"://"} req.http.Host "/" if(req.http.X-IIIF-Prefix, req.http.X-IIIF-Prefix "/", "") req.http.X-IIIF-Identifier {"",
     "protocol": "http://iiif.io/api/image",
     "profile": [
       "http://iiif.io/api/image/2/level0.json",
@@ -29,3 +29,9 @@ if (obj.status == 900) {
 
   return(deliver);
 }
+
+set obj.http.Content-Type = "text/plain; charset=us-ascii";
+
+synthetic obj.response;
+
+return(deliver);

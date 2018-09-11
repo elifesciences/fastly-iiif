@@ -2,6 +2,7 @@ import expect from 'expect';
 import fs from 'promise-fs';
 import path from 'path';
 import request from 'request-promise-native';
+import uuid from 'uuid/v1';
 
 const { URLSearchParams } = require('url');
 
@@ -14,11 +15,12 @@ const api = request.defaults({
 });
 
 const domain = 'iotest--iiif.elifesciences.org';
-const baseUrl = `https://${domain}/`;
+const baseUrl = `https://${domain}`;
 const http = request.defaults({
   baseUrl,
   headers: {
     'Fastly-Debug': '1',
+    'X-Test-Run': uuid(),
   },
   resolveWithFullResponse: true,
 });
@@ -31,12 +33,31 @@ beforeAll(async () => {
 
   const config = [
     api.post(`version/${version}/backend`).form({
-      hostname: 'prod-elife-published.s3.amazonaws.com',
+      hostname: 'fastly-iiif-test.s3.amazonaws.com',
       name: 'bucket',
       shield: 'dca-dc-us',
     }),
+    api.post(`version/${version}/condition`).form({
+      name: 'cats-prefix',
+      statement: 'req.http.X-IIIF-Prefix == "cats"',
+      type: 'REQUEST',
+    }).then(() => api.post(`version/${version}/header`).form({
+      name: 'cats-prefix',
+      type: 'request',
+      request_condition: 'cats-prefix',
+      action: 'set',
+      dst: 'url',
+      src: '"/cats/" req.http.X-IIIF-Identifier "?" req.url.qs',
+    })),
     api.post(`version/${version}/domain`).form({
       name: domain,
+    }),
+    api.post(`version/${version}/header`).form({
+      name: 'vary-test-run',
+      type: 'cache',
+      action: 'append',
+      dst: 'http.Vary',
+      src: '"X-Test-Run"',
     }),
   ];
 
@@ -45,7 +66,7 @@ beforeAll(async () => {
       fs.readFile(`${source}/${name}.vcl`)
         .then((contents) => {
           api.post(`version/${version}/snippet`).form({
-            name: `IIIF ${name}`,
+            name: `IIIF vcl_${name}`,
             dynamic: 0,
             type: name,
             content: contents,
@@ -60,8 +81,8 @@ beforeAll(async () => {
 
 const imageUri = (originalParts) => {
   const parts = Object.assign({
-    prefix: 'articles',
-    identifier: '10627%2Felife-10627-fig1-v1.jpg',
+    prefix: '',
+    identifier: 'pug-life.jpg',
     region: 'full',
     size: 'full',
     rotation: 0,
@@ -85,7 +106,7 @@ describe('Image request', () => {
     return http.get(imageUri(iiifParameters))
       .then((response) => {
         expect(response.statusCode).toBe(200);
-        expect(response.headers['x-fastly-io-url']).toBe(`/articles/10627%2Felife-10627-fig1-v1.jpg?${ioQueryParameters.toString()}`);
+        expect(response.headers['x-fastly-io-url']).toBe(`/pug-life.jpg?${ioQueryParameters.toString()}`);
       });
   };
 
@@ -268,17 +289,33 @@ describe('Image request', () => {
 describe('Info request', () => {
   test.each([
     [
-      'articles/',
-      '10627%2Felife-10627-fig1-v1.jpg',
+      '',
+      'pug-life.jpg',
       {
-        width: 4473,
-        height: 2241,
+        width: 2000,
+        height: 1333,
       },
     ],
-  ])('%s%s/info.json', (prefix, identifier, requiredJson) => {
+    [
+      '/cats',
+      'pop6.jpg',
+      {
+        width: 4288,
+        height: 2848,
+      },
+    ],
+    [
+      '/cats',
+      'more%2Fcat-manipulating.jpg',
+      {
+        width: 3264,
+        height: 2448,
+      },
+    ],
+  ])('%s/%s/info.json', (prefix, identifier, requiredJson) => {
     const json = Object.assign({
       '@context': 'http://iiif.io/api/image/2/context.json',
-      '@id': baseUrl.concat(prefix, identifier),
+      '@id': baseUrl.concat(prefix, '/', identifier),
       protocol: 'http://iiif.io/api/image',
       profile: [
         'http://iiif.io/api/image/2/level0.json',
@@ -292,7 +329,7 @@ describe('Info request', () => {
 
     expect.assertions(2);
 
-    return http.get(`${prefix}${identifier}/info.json`)
+    return http.get(`${prefix}/${identifier}/info.json`)
       .then((response) => {
         expect(response.statusCode).toBe(200);
         expect(JSON.parse(response.body)).toEqual(json);
