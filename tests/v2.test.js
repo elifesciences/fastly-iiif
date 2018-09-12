@@ -429,6 +429,7 @@ describe('Unknown paths', () => {
 
 describe('Unknown versions', () => {
   const paths = [
+    'foo',
     '1',
     '3',
   ];
