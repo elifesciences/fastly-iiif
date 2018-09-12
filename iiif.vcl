@@ -1,9 +1,5 @@
 sub vcl_recv {
 
-  if (req.request != "HEAD" && req.request != "GET" && req.request != "FASTLYPURGE") {
-    error 405 "Not a IIIF method";
-  }
-
   if (req.restarts > 0 && req.http.X-Fastly-IO-Info) {
     error 900 "Restart for info request";
   }
@@ -13,6 +9,16 @@ sub vcl_recv {
   unset req.http.X-IIIF-Info;
   unset req.http.X-IIIF-Prefix;
   unset req.http.X-IIIF-Identifier;
+
+  call iiif_config;
+
+  if (req.http.X-IIIF-Version != "2") {
+    error 500 "Unknown IIIF version";
+  }
+
+  if (req.request != "HEAD" && req.request != "GET" && req.request != "FASTLYPURGE") {
+    error 405 "Not a IIIF method";
+  }
 
   # Keep track of the original URL
   set req.http.X-Original-URL = req.url;
@@ -44,10 +50,6 @@ sub vcl_recv {
   }
 
 #FASTLY recv
-
-  if (req.http.X-IIIF-Version != "2") {
-    error 500 "Unknown IIIF version";
-  }
 
   if (req.http.X-IIIF-Info) {
     # Info request

@@ -59,12 +59,17 @@ beforeAll(async () => {
       dst: 'http.Vary',
       src: '"X-Test-Run"',
     }),
-    api.post(`version/${version}/header`).form({
-      name: 'iiif-version',
-      type: 'request',
-      action: 'set',
-      dst: 'http.X-IIIF-Version',
-      src: 'if(req.http.X-Test-IIIF-Version, req.http.X-Test-IIIF-Version, req.http.X-IIIF-Version)',
+    api.post(`version/${version}/snippet`).form({
+      name: 'IIIF config',
+      dynamic: 0,
+      type: 'init',
+      content: `
+sub iiif_config {
+
+  set req.http.X-IIIF-Version = if(req.http.X-Test-IIIF-Version, req.http.X-Test-IIIF-Version, "2");
+
+}
+`,
     }),
     fs.readFile(`${root}/iiif.vcl`)
       .then((contents) => {
@@ -424,7 +429,6 @@ describe('Unknown paths', () => {
 
 describe('Unknown versions', () => {
   const paths = [
-    'foo',
     '1',
     '3',
   ];
