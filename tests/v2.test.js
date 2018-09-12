@@ -1,4 +1,3 @@
-import expect from 'expect';
 import fs from 'promise-fs';
 import pathTool from 'path';
 import request from 'request-promise-native';
@@ -23,6 +22,7 @@ const http = request.defaults({
     'X-Test-Run': uuid(),
   },
   resolveWithFullResponse: true,
+  simple: false,
 });
 
 const root = pathTool.resolve(__dirname, '../');
@@ -99,33 +99,23 @@ const imageUri = (originalParts) => {
 };
 
 describe('Image request', () => {
-  const ok = (iiifParameters, requestedIoParameters = {}, method = 'GET') => {
+  const ok = async (iiifParameters, requestedIoParameters = {}, method = 'GET') => {
     const ioParameters = Object.assign({
       format: 'pjpg',
     }, requestedIoParameters);
 
     const ioQueryParameters = new URLSearchParams(ioParameters);
 
-    expect.assertions(2);
+    const response = await http({ method, uri: imageUri(iiifParameters) });
 
-    return http({
-      method,
-      uri: imageUri(iiifParameters),
-    })
-      .then((response) => {
-        expect(response.statusCode).toBe(200);
-        expect(response.headers['x-fastly-io-url']).toBe(`/pug-life.jpg?${ioQueryParameters.toString()}`);
-      });
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['x-fastly-io-url']).toBe(`/pug-life.jpg?${ioQueryParameters.toString()}`);
   };
 
-  const error = (iiifParameters, statusCode, method = 'GET') => {
-    expect.assertions(1);
+  const error = async (iiifParameters, statusCode, method = 'GET') => {
+    const response = await http({ method, uri: imageUri(iiifParameters) });
 
-    return http({
-      method,
-      uri: imageUri(iiifParameters),
-    })
-      .catch(exception => expect(exception).toHaveProperty('statusCode', statusCode));
+    expect(response.statusCode).toBe(statusCode);
   };
 
   const badRequest = iiifParameters => error(iiifParameters, 400);
@@ -357,7 +347,7 @@ describe('Info request', () => {
         height: 2448,
       },
     ],
-  ])('%s/%s/info.json', (prefix, identifier, requiredJson) => {
+  ])('%s/%s/info.json', async (prefix, identifier, requiredJson) => {
     const json = Object.assign({
       '@context': 'http://iiif.io/api/image/2/context.json',
       '@id': baseUrl.concat(prefix, '/', identifier),
@@ -372,13 +362,10 @@ describe('Info request', () => {
       ],
     }, requiredJson);
 
-    expect.assertions(2);
+    const response = await http.get(`${prefix}/${identifier}/info.json`);
 
-    return http.get(`${prefix}/${identifier}/info.json`)
-      .then((response) => {
-        expect(response.statusCode).toBe(200);
-        expect(JSON.parse(response.body)).toEqual(json);
-      });
+    expect(response.statusCode).toBe(200);
+    expect(JSON.parse(response.body)).toEqual(json);
   });
 });
 
@@ -388,11 +375,10 @@ describe('Non-image request', () => {
     'foo.txt/full/full/0/default.jpg',
   ];
 
-  test.each(paths.map(path => [path]))('%s', (path) => {
-    expect.assertions(1);
+  test.each(paths.map(path => [path]))('%s', async (path) => {
+    const response = await http.get(path);
 
-    return http.get(path)
-      .catch(exception => expect(exception).toHaveProperty('statusCode', 404));
+    expect(response.statusCode).toBe(404);
   });
 });
 
@@ -402,11 +388,10 @@ describe('Unknown images', () => {
     'foo.jpg/full/full/0/default.jpg',
   ];
 
-  test.each(paths.map(path => [path]))('%s', (path) => {
-    expect.assertions(1);
+  test.each(paths.map(path => [path]))('%s', async (path) => {
+    const response = await http.get(path);
 
-    return http.get(path)
-      .catch(exception => expect(exception).toHaveProperty('statusCode', 404));
+    expect(response.statusCode).toBe(404);
   });
 });
 
@@ -419,11 +404,10 @@ describe('Unknown paths', () => {
     'foo.jpg/full/full/0/default',
   ];
 
-  test.each(paths.map(path => [path]))('%s', (path) => {
-    expect.assertions(1);
+  test.each(paths.map(path => [path]))('%s', async (path) => {
+    const response = await http.get(path);
 
-    return http.get(path)
-      .catch(exception => expect(exception).toHaveProperty('statusCode', 404));
+    expect(response.statusCode).toBe(404);
   });
 });
 
@@ -434,10 +418,9 @@ describe('Unknown versions', () => {
     '3',
   ];
 
-  test.each(paths.map(version => [version]))('%s', (version) => {
-    expect.assertions(1);
+  test.each(paths.map(version => [version]))('%s', async (version) => {
+    const response = await http.get(imageUri(), { headers: { 'X-Test-IIIF-Version': version } });
 
-    return http.get(imageUri(), { headers: { 'X-Test-IIIF-Version': version } })
-      .catch(exception => expect(exception).toHaveProperty('statusCode', 500));
+    expect(response.statusCode).toBe(500);
   });
 });
