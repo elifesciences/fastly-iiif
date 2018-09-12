@@ -127,7 +127,7 @@ describe('Image request', () => {
         'HEAD',
       ];
 
-      test.each(methods.map(method => [method]))('%s', method => ok({}, {}, method));
+      test.each(methods)('%s', method => ok({}, {}, method));
     });
 
     describe('Unsupported', () => {
@@ -140,7 +140,7 @@ describe('Image request', () => {
         'TRACE',
       ];
 
-      test.each(methods.map(method => [method]))('%s', method => error({}, 405, method));
+      test.each(methods)('%s', method => error({}, 405, method));
     });
 
     describe('Invalid', () => {
@@ -148,7 +148,7 @@ describe('Image request', () => {
         'FOO',
       ];
 
-      test.each(methods.map(method => [method]))('%s', method => error({}, 405, method));
+      test.each(methods)('%s', method => error({}, 405, method));
     });
   });
 
@@ -158,7 +158,7 @@ describe('Image request', () => {
         'full',
       ];
 
-      test.each(regions.map(region => [region]))('%s', region => ok({ region }));
+      test.each(regions)('%s', region => ok({ region }));
     });
 
     describe('Unsupported', () => {
@@ -169,7 +169,7 @@ describe('Image request', () => {
         'pct:1,2,3,4',
       ];
 
-      test.each(regions.map(region => [region]))('%s', region => badRequest({ region }));
+      test.each(regions)('%s', region => badRequest({ region }));
     });
 
     describe('Invalid', () => {
@@ -182,7 +182,7 @@ describe('Image request', () => {
         'foo',
       ];
 
-      test.each(regions.map(region => [region]))('%s', region => badRequest({ region }));
+      test.each(regions)('%s', region => badRequest({ region }));
     });
   });
 
@@ -192,7 +192,7 @@ describe('Image request', () => {
         'full',
       ];
 
-      test.each(sizes.map(size => [size]))('%s', size => ok({ size }));
+      test.each(sizes)('%s', size => ok({ size }));
     });
 
     describe('Unsupported', () => {
@@ -208,7 +208,7 @@ describe('Image request', () => {
         '!90',
       ];
 
-      test.each(sizes.map(size => [size]))('%s', size => badRequest({ size }));
+      test.each(sizes)('%s', size => badRequest({ size }));
     });
 
     describe('Invalid', () => {
@@ -220,7 +220,7 @@ describe('Image request', () => {
         'foo',
       ];
 
-      test.each(sizes.map(size => [size]))('%s', size => badRequest({ size }));
+      test.each(sizes)('%s', size => badRequest({ size }));
     });
   });
 
@@ -230,7 +230,7 @@ describe('Image request', () => {
         '0',
       ];
 
-      test.each(rotations.map(rotation => [rotation]))('%s', rotation => ok({ rotation }));
+      test.each(rotations)('%s', rotation => ok({ rotation }));
     });
 
     describe('Unsupported', () => {
@@ -247,7 +247,7 @@ describe('Image request', () => {
         '!90',
       ];
 
-      test.each(rotations.map(rotation => [rotation]))('%s', rotation => badRequest({ rotation }));
+      test.each(rotations)('%s', rotation => badRequest({ rotation }));
     });
 
     describe('Invalid', () => {
@@ -257,7 +257,7 @@ describe('Image request', () => {
         'foo',
       ];
 
-      test.each(rotations.map(rotation => [rotation]))('%s', rotation => badRequest({ rotation }));
+      test.each(rotations)('%s', rotation => badRequest({ rotation }));
     });
   });
 
@@ -267,7 +267,7 @@ describe('Image request', () => {
         'default',
       ];
 
-      test.each(qualities.map(quality => [quality]))('%s', quality => ok({ quality }));
+      test.each(qualities)('%s', quality => ok({ quality }));
     });
 
     describe('Unsupported', () => {
@@ -277,7 +277,7 @@ describe('Image request', () => {
         'gray',
       ];
 
-      test.each(qualities.map(quality => [quality]))('%s', quality => badRequest({ quality }));
+      test.each(qualities)('%s', quality => badRequest({ quality }));
     });
 
     describe('Invalid', () => {
@@ -285,7 +285,7 @@ describe('Image request', () => {
         'foo',
       ];
 
-      test.each(qualities.map(quality => [quality]))('%s', quality => badRequest({ quality }));
+      test.each(qualities)('%s', quality => badRequest({ quality }));
     });
   });
 
@@ -308,7 +308,7 @@ describe('Image request', () => {
         'webp',
       ];
 
-      test.each(formats.map(format => [format]))('%s', format => badRequest({ format }));
+      test.each(formats)('%s', format => badRequest({ format }));
     });
 
     describe('Invalid', () => {
@@ -316,7 +316,7 @@ describe('Image request', () => {
         'foo',
       ];
 
-      test.each(formats.map(format => [format]))('%s', format => badRequest({ format }));
+      test.each(formats)('%s', format => badRequest({ format }));
     });
   });
 });
@@ -375,7 +375,7 @@ describe('Non-image request', () => {
     'foo.txt/full/full/0/default.jpg',
   ];
 
-  test.each(paths.map(path => [path]))('%s', async (path) => {
+  test.each(paths)('%s', async (path) => {
     const response = await http.get(path);
 
     expect(response.statusCode).toBe(404);
@@ -388,7 +388,7 @@ describe('Unknown images', () => {
     'foo.jpg/full/full/0/default.jpg',
   ];
 
-  test.each(paths.map(path => [path]))('%s', async (path) => {
+  test.each(paths)('%s', async (path) => {
     const response = await http.get(path);
 
     expect(response.statusCode).toBe(404);
@@ -404,7 +404,7 @@ describe('Unknown paths', () => {
     'foo.jpg/full/full/0/default',
   ];
 
-  test.each(paths.map(path => [path]))('%s', async (path) => {
+  test.each(paths)('%s', async (path) => {
     const response = await http.get(path);
 
     expect(response.statusCode).toBe(404);
@@ -418,7 +418,7 @@ describe('Unknown versions', () => {
     '3',
   ];
 
-  test.each(paths.map(version => [version]))('%s', async (version) => {
+  test.each(paths)('%s', async (version) => {
     const response = await http.get(imageUri(), { headers: { 'X-Test-IIIF-Version': version } });
 
     expect(response.statusCode).toBe(500);
