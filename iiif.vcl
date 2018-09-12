@@ -121,23 +121,7 @@ sub vcl_miss {
 
 #FASTLY miss
 
-  if (!req.backend.is_shield) {
-    unset bereq.http.host;
-    unset bereq.http.X-Fastly-IO-Format;
-    unset bereq.http.X-Fastly-IO-URL;
-    unset bereq.http.X-IIIF-Version;
-    unset bereq.http.X-IIIF-Info;
-    unset bereq.http.X-IIIF-Prefix;
-    unset bereq.http.X-IIIF-Identifier;
-    unset bereq.http.X-IIIF-Region;
-    unset bereq.http.X-IIIF-Size;
-    unset bereq.http.X-IIIF-Rotation;
-    unset bereq.http.X-IIIF-Quality;
-    unset bereq.http.X-IIIF-Format;
-    unset bereq.http.X-Original-URL;
-  } else {
-    set bereq.url = req.http.X-Original-URL;
-  }
+  call iiif_backend_fetch;
 
   return(fetch);
 }
@@ -219,6 +203,18 @@ sub vcl_pass {
 
 #FASTLY pass
 
+  call iiif_backend_fetch;
+
+}
+
+sub vcl_log {
+
+#FASTLY log
+
+}
+
+sub iiif_backend_fetch {
+
   if (!req.backend.is_shield) {
     unset bereq.http.host;
     unset bereq.http.X-Fastly-IO-Format;
@@ -236,11 +232,5 @@ sub vcl_pass {
   } else {
     set bereq.url = req.http.X-Original-URL;
   }
-
-}
-
-sub vcl_log {
-
-#FASTLY log
 
 }
