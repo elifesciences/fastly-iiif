@@ -27,6 +27,18 @@ const http = request.defaults({
   simple: false,
 });
 
+const sleep = duration => new Promise(resolve => setTimeout(resolve, duration));
+
+const backOff = (retries, fn, delay = 500) => fn().catch(async (err) => {
+  if (retries < 1) {
+    return Promise.reject(err);
+  }
+
+  await sleep(delay);
+
+  return () => backOff(retries - 1, fn, delay * 2);
+});
+
 beforeAll(async () => {
   // Create a new version.
   const version = await api.post('version')
@@ -72,6 +84,15 @@ beforeAll(async () => {
     src: '"X-Test-Run"',
   }));
 
+  // Add 'X-Fastly-Config-Version' to responses to allow checking what's active.
+  config.push(api.post(`version/${version}/header`).form({
+    name: 'fastly-config-version',
+    type: 'response',
+    action: 'set',
+    dst: 'http.X-Fastly-Config-Version',
+    src: `"${version}"`,
+  }));
+
   // Add 'iiif_config' to configure the VCL.
   config.push(api.post(`version/${version}/snippet`).form({
     name: 'IIIF config',
@@ -101,6 +122,16 @@ sub iiif_config {
 
   // Activate the version.
   await api.put(`version/${version}/activate`);
+
+  // Wait for it to be deployed.
+  await backOff(10, () => http.get('')
+    .then((response) => {
+      if (response.headers['x-fastly-config-version'] !== `${version}`) {
+        throw new Error(`Version not deployed, got ${response.headers['x-iiif-version']}`);
+      }
+
+      return response;
+    }));
 });
 
 const createImageUri = ({
