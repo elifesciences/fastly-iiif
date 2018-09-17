@@ -149,6 +149,7 @@ describe('Image request', () => {
         const response = await http({ method, uri: createImageUri() });
 
         expect(response.statusCode).toBe(405);
+        expect(response.body).toBe('Not a IIIF method');
       });
     });
 
@@ -157,6 +158,7 @@ describe('Image request', () => {
         const response = await http({ method, uri: createImageUri() });
 
         expect(response.statusCode).toBe(405);
+        expect(response.body).toBe('Not a IIIF method');
       });
     });
   });
@@ -165,8 +167,8 @@ describe('Image request', () => {
     const supported = [
       ['full', '/pug-life.jpg?format=pjpg'],
     ];
-    const unsupported = ['square', '0,0,100,100', '100,100,100,100', 'pct:1,2,3,4'];
-    const invalid = ['-1,-1,100,100', '0,0,-1,-1', 'pct:1,2', 'pct:1,2,3', 'pct:1,2,3,0', 'foo'];
+    const unsupported = ['square', '0,0,100,100', '100,100,100,100', 'pct:0,0,1,1', 'pct:0,0,0.01,0.01', 'pct:0.0,0.0,100.0,100.0', 'pct:99.99,99.99,100.00,100.00'];
+    const invalid = ['-1,-1,100,100', '0,0,-1,-1', '1,1,0,0', 'pct:00,00,1,1', 'pct:0,0,01,01', 'pct:1', 'pct:1,2', 'pct:1,2,3', 'pct:1,2,3,0', 'pct:100,100,100,100', 'pct:-1,-1,-1,-1', 'pct:0,0,0,0', 'pct:0.,0.,100.,100.', 'foo'];
 
     describe('Supported values', () => {
       test.each(supported)('%s', async (region, expected) => {
@@ -182,6 +184,7 @@ describe('Image request', () => {
         const response = await http({ uri: createImageUri({ region }) });
 
         expect(response.statusCode).toBe(400);
+        expect(response.body).toBe('Unsupported region parameter');
       });
     });
 
@@ -190,6 +193,7 @@ describe('Image request', () => {
         const response = await http({ uri: createImageUri({ region }) });
 
         expect(response.statusCode).toBe(400);
+        expect(response.body).toBe('Invalid region parameter');
       });
     });
   });
@@ -198,8 +202,8 @@ describe('Image request', () => {
     const supported = [
       ['full', '/pug-life.jpg?format=pjpg'],
     ];
-    const unsupported = ['max', '100,', ',100', '100,100', '!100,100', 'pct:50', 'pct:100', '!1', '!90'];
-    const invalid = ['0,0', '-1,-1', 'pct:0', 'pct:101', 'foo'];
+    const unsupported = ['max', '1,', ',1', '1,1', '!1,1', 'pct:0.001', 'pct:50', 'pct:100', 'pct:100.00'];
+    const invalid = ['0,', '1.0', '01,', ',0', ',1.0', ',01', '0,0', '1.0,1.0', '-1,-1', '!0,0', '!1.0,1.0', 'pct:0', 'pct:1.', 'ptc:50.0', 'pct: 100.001', 'pct:101', 'foo'];
 
     describe('Supported values', () => {
       test.each(supported)('%s', async (size, expected) => {
@@ -215,6 +219,7 @@ describe('Image request', () => {
         const response = await http({ uri: createImageUri({ size }) });
 
         expect(response.statusCode).toBe(400);
+        expect(response.body).toBe('Unsupported size parameter');
       });
     });
 
@@ -223,6 +228,7 @@ describe('Image request', () => {
         const response = await http({ uri: createImageUri({ size }) });
 
         expect(response.statusCode).toBe(400);
+        expect(response.body).toBe('Invalid size parameter');
       });
     });
   });
@@ -231,8 +237,8 @@ describe('Image request', () => {
     const supported = [
       ['0', '/pug-life.jpg?format=pjpg'],
     ];
-    const unsupported = ['90', '180', '270', '360', '1', '1.5', '!0', '!1', '!1.5', '!90'];
-    const invalid = ['-0', '-90', 'foo'];
+    const unsupported = ['90', '180', '270', '359.999', '360', '360.00', '0.001', '!0', '!1', '!0.001', '!90'];
+    const invalid = ['1.', '360.001', '361', '-0', '-90', 'foo'];
 
     describe('Supported values', () => {
       test.each(supported)('%s', async (rotation, expected) => {
@@ -248,6 +254,7 @@ describe('Image request', () => {
         const response = await http({ uri: createImageUri({ rotation }) });
 
         expect(response.statusCode).toBe(400);
+        expect(response.body).toBe('Unsupported rotation parameter');
       });
     });
 
@@ -256,6 +263,7 @@ describe('Image request', () => {
         const response = await http({ uri: createImageUri({ rotation }) });
 
         expect(response.statusCode).toBe(400);
+        expect(response.body).toBe('Invalid rotation parameter');
       });
     });
   });
@@ -281,6 +289,7 @@ describe('Image request', () => {
         const response = await http({ uri: createImageUri({ quality }) });
 
         expect(response.statusCode).toBe(400);
+        expect(response.body).toBe('Unsupported quality parameter');
       });
     });
 
@@ -289,6 +298,7 @@ describe('Image request', () => {
         const response = await http({ uri: createImageUri({ quality }) });
 
         expect(response.statusCode).toBe(400);
+        expect(response.body).toBe('Invalid quality parameter');
       });
     });
   });
@@ -314,6 +324,7 @@ describe('Image request', () => {
         const response = await http({ uri: createImageUri({ format }) });
 
         expect(response.statusCode).toBe(400);
+        expect(response.body).toBe('Unsupported format parameter');
       });
     });
 
@@ -322,6 +333,7 @@ describe('Image request', () => {
         const response = await http({ uri: createImageUri({ format }) });
 
         expect(response.statusCode).toBe(400);
+        expect(response.body).toBe('Invalid format parameter');
       });
     });
   });

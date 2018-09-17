@@ -56,26 +56,44 @@ sub vcl_recv {
     set req.request = "HEAD";
   } else {
     # Image request
-    if (req.http.X-IIIF-Region != "full") {
-      error 400 "Invalid region";
-    }
-
-    if (req.http.X-IIIF-Size != "full") {
-      error 400 "Invalid size";
-    }
-
-    if (req.http.X-IIIF-Rotation != "0") {
-      error 400 "Invalid rotation";
-    }
-
-    if (req.http.X-IIIF-Quality != "default") {
-      error 400 "Invalid quality";
-    }
-
-    if (req.http.X-IIIF-Format != "jpg") {
-      error 400 "Invalid format";
+    if (req.http.X-IIIF-Region == "full") {
+      // Do nothing
+    } else if (req.http.X-IIIF-Region ~ "^(?:square|\d+,\d+(?:,[1-9]\d*){2}|pct:(?:[1-9]?\d(?:\.\d+)?),(?:\d{1,2}(?:\.\d+)?)(?:,(?:(?:0(?:\.0*[1-9]\d*))|(?:[1-9][0-9]?(?:\.0*[1-9]\d*)?)|(?:100(?:\.0+)?))){2})$") {
+      error 400 "Unsupported region parameter";
     } else {
+      error 400 "Invalid region parameter";
+    }
+
+    if (req.http.X-IIIF-Size == "full") {
+      // Do nothing
+    } else if (req.http.X-IIIF-Size ~ "^(?:max|[1-9]\d*,|,[1-9]\d*|pct:(?:100(?:\.0+)?|0\.0*[1-9]\d*|[1-9]\d?(?:\.\d+)?)|!?[1-9]\d*,[1-9]\d*)$") {
+      error 400 "Unsupported size parameter";
+    } else {
+      error 400 "Invalid size parameter";
+    }
+
+    if (req.http.X-IIIF-Rotation == "0") {
+      // Do nothing
+    } else if (req.http.X-IIIF-Rotation ~ "^!?(?:360(?:\.0+)?$|3[0-5][0-9]|[12][0-9][0-9]|[1-9]?[0-9])(?:\.[0-9]+)?$") {
+      error 400 "Unsupported rotation parameter";
+    } else {
+      error 400 "Invalid rotation parameter";
+    }
+
+    if (req.http.X-IIIF-Quality == "default") {
+      // Do nothing
+    } else if (req.http.X-IIIF-Quality ~ "^(?:bitonal|color|gray)$") {
+      error 400 "Unsupported quality parameter";
+    } else {
+      error 400 "Invalid quality parameter";
+    }
+
+    if (req.http.X-IIIF-Format == "jpg") {
       set req.http.X-Fastly-IO-Format = "pjpg";
+    } else if (req.http.X-IIIF-Format ~ "^(?:gif|jp2|pdf|png|tif|webp)$") {
+      error 400 "Unsupported format parameter";
+    } else {
+      error 400 "Invalid format parameter";
     }
     set req.url = req.url "?format=" req.http.X-Fastly-IO-Format;
   }
