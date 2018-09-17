@@ -1,4 +1,5 @@
 module.exports = {
+  globalSetup: './tests/setup.js',
   setupTestFrameworkScriptFile: './jest.setup.js',
-  testEnvironment: 'node',
+  testEnvironment: './tests/environment.js',
 };
