@@ -397,6 +397,7 @@ describe('Non-image request', () => {
     const response = await http.get(path);
 
     expect(response.statusCode).toBe(404);
+    expect(response.body).toBe('Hidden as can\'t be processed by Fastly IO');
   });
 });
 
@@ -409,7 +410,8 @@ describe('Unknown images', () => {
   test.each(paths)('%s', async (path) => {
     const response = await http.get(path);
 
-    expect(response.statusCode).toBe(404);
+    expect(response.statusCode).toBe(403); // Set by backend
+    expect(response.body).toBe('Forbidden');
   });
 });
 
@@ -426,6 +428,7 @@ describe('Unknown paths', () => {
     const response = await http.get(path);
 
     expect(response.statusCode).toBe(404);
+    expect(response.body).toBe('Not a IIIF path');
   });
 });
 
@@ -440,5 +443,6 @@ describe('Unknown versions', () => {
     const response = await http.get(createImageUri(), { headers: { 'X-Test-IIIF-Version': version } });
 
     expect(response.statusCode).toBe(500);
+    expect(response.body).toBe('Unknown IIIF version');
   });
 });
