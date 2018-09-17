@@ -1,5 +1,6 @@
 import fs from 'promise-fs';
 import pathTool from 'path';
+import retry from 'p-retry';
 import request from 'request-promise-native';
 import uuid from 'uuid/v1';
 
@@ -25,18 +26,6 @@ const http = request.defaults({
   },
   resolveWithFullResponse: true,
   simple: false,
-});
-
-const sleep = duration => new Promise(resolve => setTimeout(resolve, duration));
-
-const backOff = (retries, fn, delay = 500) => fn().catch(async (err) => {
-  if (retries < 1) {
-    return Promise.reject(err);
-  }
-
-  await sleep(delay);
-
-  return () => backOff(retries - 1, fn, delay * 2);
 });
 
 beforeAll(async () => {
@@ -124,14 +113,10 @@ sub iiif_config {
   await api.put(`version/${version}/activate`);
 
   // Wait for it to be deployed.
-  await backOff(10, () => http.get('')
-    .then((response) => {
-      if (response.headers['x-fastly-config-version'] !== `${version}`) {
-        throw new Error(`Version not deployed, got ${response.headers['x-iiif-version']}`);
-      }
+  const checkDeployed = () => http.head('')
+    .then(response => expect(response.headers['x-fastly-config-version']).toBe(`${version}`));
 
-      return response;
-    }));
+  await retry(checkDeployed, { factor: 1, minTimeout: 2 * 1000, retries: 20 });
 });
 
 const createImageUri = ({
