@@ -397,7 +397,7 @@ describe('Non-image request', () => {
     const response = await http.get(path);
 
     expect(response.statusCode).toBe(404);
-    expect(response.body).toBe('Hidden as can\'t be processed by Fastly IO');
+    expect(response.body).toBe('Not Found');
   });
 });
 
