@@ -104,7 +104,7 @@ sub vcl_recv {
 }
 
 sub vcl_fetch {
-  if (beresp.http.Fastly-IO-Error ~ "not a supported image format") {
+  if (beresp.http.Fastly-IO-Error ~ "not a supported image format" || (beresp.http.Content-Type !~ "image/(?:gif|jpeg|png|webp)" && !req.backend.is_shield)) {
     error 404 "Hidden as can't be processed by Fastly IO";
   } else if (beresp.status >= 400 && beresp.status < 600) {
     error beresp.status;
