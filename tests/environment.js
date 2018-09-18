@@ -8,16 +8,16 @@ class FastlyEnvironment extends NodeEnvironment {
 
     const domain = process.env.FASTLY_DOMAIN;
     const baseUrl = `http://${domain}`;
-    const headers = {
+    const headers = () => ({
       'Fastly-Debug': '1',
       Host: domain,
       'X-Test-Run': uuid(),
-    };
+    });
 
     // Shield client.
     this.global.shieldClient = request.defaults({
       baseUrl: 'http://cache-dca17744.hosts.fastly.net',
-      headers,
+      headers: headers(),
       resolveWithFullResponse: true,
       simple: false,
     });
@@ -25,7 +25,7 @@ class FastlyEnvironment extends NodeEnvironment {
     // Edge client.
     this.global.edgeClient = request.defaults({
       baseUrl: 'http://cache-iad2120.hosts.fastly.net',
-      headers,
+      headers: headers(),
       resolveWithFullResponse: true,
       simple: false,
     });
