@@ -19,7 +19,10 @@ describe('Image request', () => {
         const response = await http({ method, uri: createImageUri() });
 
         expect(response.statusCode).toBe(200);
+        expect(response.headers['content-type']).toBe('image/jpeg');
         expect(response.headers['x-fastly-io-url']).toBe('/pug-life.jpg?format=pjpg');
+        expect(response.headers).toHaveProperty('age');
+        expect(response.headers['cache-control']).toBe('max-age=3600, public');
       });
     });
 
@@ -28,7 +31,9 @@ describe('Image request', () => {
         const response = await http({ method, uri: createImageUri() });
 
         expect(response.statusCode).toBe(405);
+        expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
         expect(response.body).toBe('Not a IIIF method');
+        expect(Object.keys(response.headers)).not.toEqual(expect.arrayContaining(['age', 'cache-control']));
       });
     });
 
@@ -37,7 +42,9 @@ describe('Image request', () => {
         const response = await http({ method, uri: createImageUri() });
 
         expect(response.statusCode).toBe(405);
+        expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
         expect(response.body).toBe('Not a IIIF method');
+        expect(Object.keys(response.headers)).not.toEqual(expect.arrayContaining(['age', 'cache-control']));
       });
     });
   });
@@ -55,6 +62,8 @@ describe('Image request', () => {
 
         expect(response.statusCode).toBe(200);
         expect(response.headers['x-fastly-io-url']).toBe(expected);
+        expect(response.headers).toHaveProperty('age');
+        expect(response.headers['cache-control']).toBe('max-age=3600, public');
       });
     });
 
@@ -63,7 +72,9 @@ describe('Image request', () => {
         const response = await http({ uri: createImageUri({ region }) });
 
         expect(response.statusCode).toBe(400);
+        expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
         expect(response.body).toBe('Unsupported region parameter');
+        expect(Object.keys(response.headers)).not.toEqual(expect.arrayContaining(['age', 'cache-control']));
       });
     });
 
@@ -72,7 +83,9 @@ describe('Image request', () => {
         const response = await http({ uri: createImageUri({ region }) });
 
         expect(response.statusCode).toBe(400);
+        expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
         expect(response.body).toBe('Invalid region parameter');
+        expect(Object.keys(response.headers)).not.toEqual(expect.arrayContaining(['age', 'cache-control']));
       });
     });
   });
@@ -89,7 +102,10 @@ describe('Image request', () => {
         const response = await http({ uri: createImageUri({ size }) });
 
         expect(response.statusCode).toBe(200);
+        expect(response.headers['content-type']).toBe('image/jpeg');
         expect(response.headers['x-fastly-io-url']).toBe(expected);
+        expect(response.headers).toHaveProperty('age');
+        expect(response.headers['cache-control']).toBe('max-age=3600, public');
       });
     });
 
@@ -98,7 +114,9 @@ describe('Image request', () => {
         const response = await http({ uri: createImageUri({ size }) });
 
         expect(response.statusCode).toBe(400);
+        expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
         expect(response.body).toBe('Unsupported size parameter');
+        expect(Object.keys(response.headers)).not.toEqual(expect.arrayContaining(['age', 'cache-control']));
       });
     });
 
@@ -107,7 +125,9 @@ describe('Image request', () => {
         const response = await http({ uri: createImageUri({ size }) });
 
         expect(response.statusCode).toBe(400);
+        expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
         expect(response.body).toBe('Invalid size parameter');
+        expect(Object.keys(response.headers)).not.toEqual(expect.arrayContaining(['age', 'cache-control']));
       });
     });
   });
@@ -124,7 +144,10 @@ describe('Image request', () => {
         const response = await http({ uri: createImageUri({ rotation }) });
 
         expect(response.statusCode).toBe(200);
+        expect(response.headers['content-type']).toBe('image/jpeg');
         expect(response.headers['x-fastly-io-url']).toBe(expected);
+        expect(response.headers).toHaveProperty('age');
+        expect(response.headers['cache-control']).toBe('max-age=3600, public');
       });
     });
 
@@ -133,7 +156,9 @@ describe('Image request', () => {
         const response = await http({ uri: createImageUri({ rotation }) });
 
         expect(response.statusCode).toBe(400);
+        expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
         expect(response.body).toBe('Unsupported rotation parameter');
+        expect(Object.keys(response.headers)).not.toEqual(expect.arrayContaining(['age', 'cache-control']));
       });
     });
 
@@ -142,7 +167,9 @@ describe('Image request', () => {
         const response = await http({ uri: createImageUri({ rotation }) });
 
         expect(response.statusCode).toBe(400);
+        expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
         expect(response.body).toBe('Invalid rotation parameter');
+        expect(Object.keys(response.headers)).not.toEqual(expect.arrayContaining(['age', 'cache-control']));
       });
     });
   });
@@ -160,6 +187,8 @@ describe('Image request', () => {
 
         expect(response.statusCode).toBe(200);
         expect(response.headers['x-fastly-io-url']).toBe(expected);
+        expect(response.headers).toHaveProperty('age');
+        expect(response.headers['cache-control']).toBe('max-age=3600, public');
       });
     });
 
@@ -168,7 +197,9 @@ describe('Image request', () => {
         const response = await http({ uri: createImageUri({ quality }) });
 
         expect(response.statusCode).toBe(400);
+        expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
         expect(response.body).toBe('Unsupported quality parameter');
+        expect(Object.keys(response.headers)).not.toEqual(expect.arrayContaining(['age', 'cache-control']));
       });
     });
 
@@ -177,7 +208,9 @@ describe('Image request', () => {
         const response = await http({ uri: createImageUri({ quality }) });
 
         expect(response.statusCode).toBe(400);
+        expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
         expect(response.body).toBe('Invalid quality parameter');
+        expect(Object.keys(response.headers)).not.toEqual(expect.arrayContaining(['age', 'cache-control']));
       });
     });
   });
@@ -194,7 +227,10 @@ describe('Image request', () => {
         const response = await http({ uri: createImageUri({ format }) });
 
         expect(response.statusCode).toBe(200);
+        expect(response.headers['content-type']).toBe('image/jpeg');
         expect(response.headers['x-fastly-io-url']).toBe(expected);
+        expect(response.headers).toHaveProperty('age');
+        expect(response.headers['cache-control']).toBe('max-age=3600, public');
       });
     });
 
@@ -203,6 +239,7 @@ describe('Image request', () => {
         const response = await http({ uri: createImageUri({ format }) });
 
         expect(response.statusCode).toBe(400);
+        expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
         expect(response.body).toBe('Unsupported format parameter');
       });
     });
@@ -212,6 +249,7 @@ describe('Image request', () => {
         const response = await http({ uri: createImageUri({ format }) });
 
         expect(response.statusCode).toBe(400);
+        expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
         expect(response.body).toBe('Invalid format parameter');
       });
     });
@@ -222,10 +260,29 @@ describe('Info request', () => {
   test.each([
     [
       '',
+      'pug-instagram.jpg',
+      {
+        width: 1229,
+        height: 922,
+      },
+      {
+        age: undefined,
+        'cache-control': 'no-cache, no-store, must-revalidate',
+      },
+      [
+        'surrogate-control',
+      ],
+    ],
+    [
+      '',
       'pug-life.jpg',
       {
         width: 2000,
         height: 1333,
+      },
+      {
+        age: undefined,
+        'cache-control': 'max-age=3600, public',
       },
     ],
     [
@@ -235,6 +292,10 @@ describe('Info request', () => {
         width: 4288,
         height: 2848,
       },
+      {
+        age: undefined, // TTL set in VCL
+        'cache-control': 'no-store, must-revalidate, private',
+      },
     ],
     [
       '/kittehs',
@@ -243,8 +304,14 @@ describe('Info request', () => {
         width: 3264,
         height: 2448,
       },
+      {
+        age: undefined,
+      },
+      [
+        'cache-control',
+      ],
     ],
-  ])('%s/%s/info.json', async (prefix, identifier, requiredJson) => {
+  ])('%s/%s/info.json', async (prefix, identifier, requiredJson, requiredHeaders = {}, notHeaders = []) => {
     const json = Object.assign({
       '@context': 'http://iiif.io/api/image/2/context.json',
       '@id': `${baseUrl}${prefix}/${identifier}`,
@@ -265,8 +332,24 @@ describe('Info request', () => {
     const response = await http.get(`${prefix}/${identifier}/info.json`);
 
     expect(response.statusCode).toBe(200);
+    expect(response.headers['content-type']).toBe('application/json');
     expect(JSON.parse(response.body)).toEqual(json);
     expect(response.headers['access-control-allow-origin']).toBe('*');
+
+    const headers = Object.keys(requiredHeaders)
+      .filter(k => requiredHeaders[k] === undefined);
+
+    const headerValues = Object.keys(requiredHeaders)
+      .filter(k => requiredHeaders[k] !== undefined)
+      .reduce((newObj, k) => Object.assign(newObj, { [k]: requiredHeaders[k] }), {});
+
+    if (headers.length > 0) {
+      expect(Object.keys(response.headers)).toEqual(expect.arrayContaining(headers));
+    }
+    if (notHeaders.length > 0) {
+      expect(Object.keys(response.headers)).not.toEqual(expect.arrayContaining(notHeaders));
+    }
+    expect(response.headers).toMatchObject(headerValues);
   });
 });
 
@@ -280,7 +363,9 @@ describe('Non-image request', () => {
     const response = await http.get(path);
 
     expect(response.statusCode).toBe(404);
+    expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
     expect(response.body).toBe('Not Found');
+    expect(Object.keys(response.headers)).not.toEqual(expect.arrayContaining(['age', 'cache-control']));
   });
 });
 
@@ -294,7 +379,9 @@ describe('Unknown images', () => {
     const response = await http.get(path);
 
     expect(response.statusCode).toBe(403); // Set by backend
+    expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
     expect(response.body).toBe('Forbidden');
+    expect(Object.keys(response.headers)).not.toEqual(expect.arrayContaining(['age', 'cache-control']));
   });
 });
 
@@ -311,6 +398,8 @@ describe('Unknown paths', () => {
     const response = await http.get(path);
 
     expect(response.statusCode).toBe(404);
+    expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
     expect(response.body).toBe('Not a IIIF path');
+    expect(Object.keys(response.headers)).not.toEqual(expect.arrayContaining(['age', 'cache-control']));
   });
 });

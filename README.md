@@ -72,8 +72,19 @@ Next, run `npm test` with the following environment variables:
 The backend is an [Amazon S3](https://aws.amazon.com/s3/) bucket, containing the following files:
 
 - `/cats/more/cat-manipulating.jpg`
+  - `Content-Type: image/jpeg`
 - `/cats/pop6.jpg`
+  - `Cache-Control: no-store, must-revalidate, private`
+  - `Content-Type: image/jpeg`
 - `/foo.txt`
+  - `Cache-Control: max-age=100, public`
+  - `Content-Type: text/plain`
+- `/pug-instagram.jpg`
+  - `Cache-Control: no-cache, no-store, must-revalidate`
+  - `Content-Type: image/jpeg`
+  - `Surrogate-Control: max-age=3600`
 - `/pug-life.jpg`
+  - `Cache-Control: max-age=3600, public`
+  - `Content-Type: image/jpeg`
 
 Any other path will see a `403 Forbidden` response.

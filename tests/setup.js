@@ -60,6 +60,15 @@ const setUp = async () => {
       src: '"/cats/" req.http.X-IIIF-Identifier "?" req.url.qs',
     })));
 
+  // Set the 'Surrogate-Control' as S3 doesn't allow setting custom headers.
+  config.push(api.post(`version/${version}/header`).form({
+    name: 's3-surrogate-control',
+    type: 'cache',
+    action: 'set',
+    dst: 'http.Surrogate-Control',
+    src: 'beresp.http.x-amz-meta-surrogate-control',
+  }));
+
   // Make sure all responses have 'Vary: X-Test-Run' to avoid conflicts between test runs.
   config.push(api.post(`version/${version}/header`).form({
     name: 'vary-test-run',
