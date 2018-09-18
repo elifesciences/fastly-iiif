@@ -6,7 +6,6 @@ const request = require('request-promise-native');
 
 const setUp = async () => {
   const domain = process.env.FASTLY_DOMAIN;
-  const baseUrl = `https://${domain}`;
   const root = pathTool.resolve(__dirname, '../');
 
   // Fastly API client.
@@ -18,9 +17,22 @@ const setUp = async () => {
     },
   });
 
-  // Test client.
-  const http = request.defaults({
-    baseUrl,
+  // Shield client.
+  const shieldClient = request.defaults({
+    baseUrl: 'http://cache-dca17744.hosts.fastly.net',
+    headers: {
+      Host: domain,
+    },
+    resolveWithFullResponse: true,
+    simple: false,
+  });
+
+  // Edge client.
+  const edgeClient = request.defaults({
+    baseUrl: 'http://cache-iad2120.hosts.fastly.net',
+    headers: {
+      Host: domain,
+    },
     resolveWithFullResponse: true,
     simple: false,
   });
@@ -118,8 +130,11 @@ sub iiif_config {
   await api.put(`version/${version}/activate`);
 
   // Wait for it to be deployed.
-  const checkDeployed = () => http.head('')
-    .then(response => expect(response.headers['x-fastly-config-version']).toBe(`${version}`));
+  const isDeployed = response => expect(response.headers['x-fastly-config-version']).toBe(`${version}`);
+  const checkDeployed = () => Promise.all([
+    shieldClient.head('').then(isDeployed),
+    edgeClient.head('').then(isDeployed),
+  ]);
 
   await retry(checkDeployed, { factor: 1, minTimeout: 2 * 1000, retries: 20 });
 };

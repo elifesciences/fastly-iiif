@@ -16,7 +16,7 @@ describe('Image request', () => {
 
     describe('Supported values', () => {
       test.each(supported)('%s', async (method) => {
-        const response = await http({ method, uri: createImageUri() });
+        const response = await edgeClient({ method, uri: createImageUri() });
 
         expect(response.statusCode).toBe(200);
         expect(response.headers['content-type']).toBe('image/jpeg');
@@ -28,7 +28,7 @@ describe('Image request', () => {
 
     describe('Unsupported values', () => {
       test.each(unsupported)('%s', async (method) => {
-        const response = await http({ method, uri: createImageUri() });
+        const response = await edgeClient({ method, uri: createImageUri() });
 
         expect(response.statusCode).toBe(405);
         expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
@@ -39,7 +39,7 @@ describe('Image request', () => {
 
     describe('Invalid values', () => {
       test.each(invalid)('%s', async (method) => {
-        const response = await http({ method, uri: createImageUri() });
+        const response = await edgeClient({ method, uri: createImageUri() });
 
         expect(response.statusCode).toBe(405);
         expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
@@ -58,7 +58,7 @@ describe('Image request', () => {
 
     describe('Supported values', () => {
       test.each(supported)('%s', async (region, expected) => {
-        const response = await http({ uri: createImageUri({ region }) });
+        const response = await edgeClient({ uri: createImageUri({ region }) });
 
         expect(response.statusCode).toBe(200);
         expect(response.headers['x-fastly-io-url']).toBe(expected);
@@ -69,7 +69,7 @@ describe('Image request', () => {
 
     describe('Unsupported values', () => {
       test.each(unsupported)('%s', async (region) => {
-        const response = await http({ uri: createImageUri({ region }) });
+        const response = await edgeClient({ uri: createImageUri({ region }) });
 
         expect(response.statusCode).toBe(400);
         expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
@@ -80,7 +80,7 @@ describe('Image request', () => {
 
     describe('Invalid values', () => {
       test.each(invalid)('%s', async (region) => {
-        const response = await http({ uri: createImageUri({ region }) });
+        const response = await edgeClient({ uri: createImageUri({ region }) });
 
         expect(response.statusCode).toBe(400);
         expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
@@ -99,7 +99,7 @@ describe('Image request', () => {
 
     describe('Supported values', () => {
       test.each(supported)('%s', async (size, expected) => {
-        const response = await http({ uri: createImageUri({ size }) });
+        const response = await edgeClient({ uri: createImageUri({ size }) });
 
         expect(response.statusCode).toBe(200);
         expect(response.headers['content-type']).toBe('image/jpeg');
@@ -111,7 +111,7 @@ describe('Image request', () => {
 
     describe('Unsupported values', () => {
       test.each(unsupported)('%s', async (size) => {
-        const response = await http({ uri: createImageUri({ size }) });
+        const response = await edgeClient({ uri: createImageUri({ size }) });
 
         expect(response.statusCode).toBe(400);
         expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
@@ -122,7 +122,7 @@ describe('Image request', () => {
 
     describe('Invalid values', () => {
       test.each(invalid)('%s', async (size) => {
-        const response = await http({ uri: createImageUri({ size }) });
+        const response = await edgeClient({ uri: createImageUri({ size }) });
 
         expect(response.statusCode).toBe(400);
         expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
@@ -141,7 +141,7 @@ describe('Image request', () => {
 
     describe('Supported values', () => {
       test.each(supported)('%s', async (rotation, expected) => {
-        const response = await http({ uri: createImageUri({ rotation }) });
+        const response = await edgeClient({ uri: createImageUri({ rotation }) });
 
         expect(response.statusCode).toBe(200);
         expect(response.headers['content-type']).toBe('image/jpeg');
@@ -153,7 +153,7 @@ describe('Image request', () => {
 
     describe('Unsupported values', () => {
       test.each(unsupported)('%s', async (rotation) => {
-        const response = await http({ uri: createImageUri({ rotation }) });
+        const response = await edgeClient({ uri: createImageUri({ rotation }) });
 
         expect(response.statusCode).toBe(400);
         expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
@@ -164,7 +164,7 @@ describe('Image request', () => {
 
     describe('Invalid values', () => {
       test.each(invalid)('%s', async (rotation) => {
-        const response = await http({ uri: createImageUri({ rotation }) });
+        const response = await edgeClient({ uri: createImageUri({ rotation }) });
 
         expect(response.statusCode).toBe(400);
         expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
@@ -183,7 +183,7 @@ describe('Image request', () => {
 
     describe('Supported values', () => {
       test.each(supported)('%s', async (quality, expected) => {
-        const response = await http({ uri: createImageUri({ quality }) });
+        const response = await edgeClient({ uri: createImageUri({ quality }) });
 
         expect(response.statusCode).toBe(200);
         expect(response.headers['x-fastly-io-url']).toBe(expected);
@@ -194,7 +194,7 @@ describe('Image request', () => {
 
     describe('Unsupported values', () => {
       test.each(unsupported)('%s', async (quality) => {
-        const response = await http({ uri: createImageUri({ quality }) });
+        const response = await edgeClient({ uri: createImageUri({ quality }) });
 
         expect(response.statusCode).toBe(400);
         expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
@@ -205,7 +205,7 @@ describe('Image request', () => {
 
     describe('Invalid values', () => {
       test.each(invalid)('%s', async (quality) => {
-        const response = await http({ uri: createImageUri({ quality }) });
+        const response = await edgeClient({ uri: createImageUri({ quality }) });
 
         expect(response.statusCode).toBe(400);
         expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
@@ -224,7 +224,7 @@ describe('Image request', () => {
 
     describe('Supported values', () => {
       test.each(supported)('%s', async (format, expected) => {
-        const response = await http({ uri: createImageUri({ format }) });
+        const response = await edgeClient({ uri: createImageUri({ format }) });
 
         expect(response.statusCode).toBe(200);
         expect(response.headers['content-type']).toBe('image/jpeg');
@@ -236,7 +236,7 @@ describe('Image request', () => {
 
     describe('Unsupported values', () => {
       test.each(unsupported)('%s', async (format) => {
-        const response = await http({ uri: createImageUri({ format }) });
+        const response = await edgeClient({ uri: createImageUri({ format }) });
 
         expect(response.statusCode).toBe(400);
         expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
@@ -246,7 +246,7 @@ describe('Image request', () => {
 
     describe('Invalid values', () => {
       test.each(invalid)('%s', async (format) => {
-        const response = await http({ uri: createImageUri({ format }) });
+        const response = await edgeClient({ uri: createImageUri({ format }) });
 
         expect(response.statusCode).toBe(400);
         expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
@@ -329,7 +329,7 @@ describe('Info request', () => {
       ],
     }, requiredJson);
 
-    const response = await http.get(`${prefix}/${identifier}/info.json`);
+    const response = await edgeClient.get(`${prefix}/${identifier}/info.json`);
 
     expect(response.statusCode).toBe(200);
     expect(response.headers['content-type']).toBe('application/json');
@@ -360,7 +360,7 @@ describe('Non-image request', () => {
   ];
 
   test.each(paths)('%s', async (path) => {
-    const response = await http.get(path);
+    const response = await edgeClient.get(path);
 
     expect(response.statusCode).toBe(404);
     expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
@@ -376,7 +376,7 @@ describe('Unknown images', () => {
   ];
 
   test.each(paths)('%s', async (path) => {
-    const response = await http.get(path);
+    const response = await edgeClient.get(path);
 
     expect(response.statusCode).toBe(403); // Set by backend
     expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
@@ -395,7 +395,7 @@ describe('Unknown paths', () => {
   ];
 
   test.each(paths)('%s', async (path) => {
-    const response = await http.get(path);
+    const response = await edgeClient.get(path);
 
     expect(response.statusCode).toBe(404);
     expect(response.headers['content-type']).toBe('text/plain; charset=us-ascii');
