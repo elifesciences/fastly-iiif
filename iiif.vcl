@@ -166,6 +166,7 @@ sub vcl_deliver {
 #FASTLY deliver
 
   if (req.http.X-IIIF-Info && resp.http.Content-Type != "application/json" && resp.http.Fastly-IO-Info ~ "idim=([0-9]+)x([0-9]+)") {
+    set req.http.X-Age = resp.http.Age;
     set req.http.X-Cache-Control = resp.http.Cache-Control;
     set req.http.X-Fastly-IO-Info = resp.http.Fastly-IO-Info;
     set req.http.X-Fastly-IO-Width = re.group.1;
@@ -188,6 +189,7 @@ sub vcl_error {
     set obj.status = 200;
     set obj.response = "OK";
     set obj.http.Access-Control-Allow-Origin = "*";
+    set obj.http.Age = req.http.X-Age;
     set obj.http.Cache-Control = req.http.X-Cache-Control;
     set obj.http.Content-Type = "application/json";
 
