@@ -20,7 +20,7 @@
   },
   "scripts": {
     "pretest": "eslint --ignore-path .gitignore .",
-    "test": "jest"
+    "test": "jest --verbose"
   },
   "babel": {
     "presets": [
