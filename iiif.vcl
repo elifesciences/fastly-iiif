@@ -187,6 +187,7 @@ sub vcl_error {
 
     set obj.status = 200;
     set obj.response = "OK";
+    set obj.http.Access-Control-Allow-Origin = "*";
     set obj.http.Cache-Control = req.http.X-Cache-Control;
     set obj.http.Content-Type = "application/json";
 
@@ -203,6 +204,9 @@ sub vcl_error {
         {
           "formats": [
             "jpg"
+          ],
+          "supports": [
+            "cors"
           ]
         }
       ],

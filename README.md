@@ -8,7 +8,11 @@ This library provides an implementation of the [IIIF image API](https://iiif.io/
 Supported versions
 ------------------
 
-- [2.1](https://iiif.io/api/image/2.1/) (level 0)
+- [2.1](https://iiif.io/api/image/2.1/) (level 0), with:
+  - Formats:
+    - `jpg`
+  - Features:
+    - `cors`
 
 Installation
 ------------

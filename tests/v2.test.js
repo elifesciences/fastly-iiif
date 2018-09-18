@@ -255,6 +255,9 @@ describe('Info request', () => {
           formats: [
             'jpg',
           ],
+          supports: [
+            'cors',
+          ],
         },
       ],
     }, requiredJson);
@@ -263,6 +266,7 @@ describe('Info request', () => {
 
     expect(response.statusCode).toBe(200);
     expect(JSON.parse(response.body)).toEqual(json);
+    expect(response.headers['access-control-allow-origin']).toBe('*');
   });
 });
 
