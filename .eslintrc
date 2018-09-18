@@ -5,6 +5,7 @@
   },
   "globals": {
     "baseUrl": false,
-    "http": false
+    "edgeClient": false,
+    "shieldClient": false
   }
 }
