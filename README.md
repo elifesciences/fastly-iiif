@@ -48,3 +48,28 @@ The version of the IIIF image API to use.
 Valid values:
 
 - `2`
+
+Running the tests
+-----------------
+
+> Requires Node.js8, and a Fastly service with VCL and image optimization enabled. It will create and activate a new configuration version.
+
+Firstly, run `npm install`.
+
+Next, run `npm test` with the following environment variables:
+
+- `FASTLY_API_KEY` ([API token](https://docs.fastly.com/guides/account-management-and-security/using-api-tokens) with `global` scope for the Fastly service)
+- `FASTLY_DOMAIN` (domain name to configure the Fastly service with)
+- `FASTLY_SERVICE_ID` ([ID of the Fastly service](https://docs.fastly.com/guides/account-management-and-security/finding-and-managing-your-account-info#finding-your-service-id))
+- `S3_BUCKET_NAME` (name of the S3 bucket) 
+
+### Backend
+
+The backend is an [Amazon S3](https://aws.amazon.com/s3/) bucket, containing the following files:
+
+- `/cats/more/cat-manipulating.jpg`
+- `/cats/pop6.jpg`
+- `/foo.txt`
+- `/pug-life.jpg`
+
+Any other path will see a `403 Forbidden` response.
