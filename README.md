@@ -43,7 +43,7 @@ sub iiif_config {
 
 ### Options
 
-Options are set as headers on the client request. (Note these headers and sanitised and set to their default value before `iiif_config` is called, and validated afterwards.)
+Options are set as headers on the client request. (Note these headers are sanitised and set to their default value before `iiif_config` is called, and validated afterwards.)
 
 #### `X-IIIF-Version`
 
@@ -56,7 +56,7 @@ Valid values:
 Running the tests
 -----------------
 
-> Requires Node.js8, and a Fastly service with VCL and image optimization enabled. It will create and activate a new configuration version.
+> Requires Node.js 8, and a Fastly service with VCL and image optimization enabled. It will create and activate a new configuration version.
 
 Firstly, run `npm install`.
 
