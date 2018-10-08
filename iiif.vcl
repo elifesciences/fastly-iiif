@@ -114,7 +114,9 @@ sub vcl_fetch {
   }
 
   unset beresp.http.Set-Cookie;
-  unset beresp.http.Vary;
+  if (!req.http.X-IIIF-Info) {
+    unset beresp.http.Vary;
+  }
 
 #FASTLY fetch
 
@@ -150,7 +152,7 @@ sub vcl_miss {
 
 sub vcl_deliver {
 
-  if (resp.http.X-Vary && !req.http.Fastly-FF) {
+  if (resp.http.X-Vary) {
     set resp.http.Vary = if(resp.http.Vary, resp.http.Vary ", " resp.http.X-Vary, resp.http.X-Vary);
     unset resp.http.X-Vary;
   }
