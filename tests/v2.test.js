@@ -218,18 +218,21 @@ const tests = (client) => {
 
     describe('Format parameter', () => {
       const supported = [
-        ['jpg', '/pug-life.jpg?format=pjpg'],
+        ['gif', '/pug-life.jpg?format=gif', 'image/gif'],
+        ['jpg', '/pug-life.jpg?format=pjpg', 'image/jpeg'],
+        ['png', '/pug-life.jpg?format=png', 'image/png'],
+        ['webp', '/pug-life.jpg?format=webp', 'image/webp'],
       ];
-      const unsupported = ['gif', 'jp2', 'pdf', 'png', 'tif', 'webp'];
+      const unsupported = ['jp2', 'pdf', 'tif'];
       const invalid = ['foo'];
 
       describe('Supported values', () => {
-        test.each(supported)('%s', async (format, expected) => {
+        test.each(supported)('%s', async (format, expectedUrl, expectedContentType) => {
           const response = await client({ uri: createImageUri({ format }) });
 
           expect(response.statusCode).toBe(200);
-          expect(response.headers['content-type']).toBe('image/jpeg');
-          expect(response.headers['x-fastly-io-url']).toBe(expected);
+          expect(response.headers['content-type']).toBe(expectedContentType);
+          expect(response.headers['x-fastly-io-url']).toBe(expectedUrl);
           expect(response.headers).toHaveProperty('age');
           expect(response.headers['cache-control']).toBe('max-age=3600, public');
         });
@@ -320,7 +323,10 @@ const tests = (client) => {
           'http://iiif.io/api/image/2/level0.json',
           {
             formats: [
+              'gif',
               'jpg',
+              'png',
+              'webp',
             ],
             supports: [
               'cors',

@@ -88,9 +88,15 @@ sub vcl_recv {
       error 400 "Invalid quality parameter";
     }
 
-    if (req.http.X-IIIF-Format == "jpg") {
+    if (req.http.X-IIIF-Format == "gif") {
+      set req.http.X-Fastly-IO-Format = "gif";
+    } else if (req.http.X-IIIF-Format == "jpg") {
       set req.http.X-Fastly-IO-Format = "pjpg";
-    } else if (req.http.X-IIIF-Format ~ "^(?:gif|jp2|pdf|png|tif|webp)$") {
+    } else if (req.http.X-IIIF-Format == "png") {
+      set req.http.X-Fastly-IO-Format = "png";
+    } else if (req.http.X-IIIF-Format == "webp") {
+      set req.http.X-Fastly-IO-Format = "webp";
+    } else if (req.http.X-IIIF-Format ~ "^(?:jp2|pdf|tif)$") {
       error 400 "Unsupported format parameter";
     } else {
       error 400 "Invalid format parameter";
@@ -205,7 +211,10 @@ sub vcl_error {
         "http://iiif.io/api/image/2/level0.json",
         {
           "formats": [
-            "jpg"
+            "gif",
+            "jpg",
+            "png",
+            "webp"
           ],
           "supports": [
             "cors"
