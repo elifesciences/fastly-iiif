@@ -347,7 +347,7 @@ const tests = (client) => {
       const response = await client({ uri: `${prefix}/${identifier}/info.json`, headers });
 
       expect(response.statusCode).toBe(200);
-      expect(response.headers.vary).toBe('Accept, X-Test-Run');
+      expect(response.headers.vary).toBe('Accept');
       expect(JSON.parse(response.body)).toEqual(json);
       expect(response.headers['access-control-allow-origin']).toBe('*');
 

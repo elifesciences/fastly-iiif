@@ -90,6 +90,19 @@ const setUp = async () => {
     src: '"X-Test-Run"',
   }));
 
+  // Remove X-Test-Run from response.
+  config.push(api.post(`version/${version}/snippet`).form({
+    name: 'Remove Vary X-Test-Run',
+    dynamic: 0,
+    type: 'deliver',
+    content: `
+set resp.http.Vary = regsub(resp.http.Vary, "X-Test-Run(?:\\s*,\\s*)?", "");
+if (resp.http.Vary ~ "^\\s*$") {
+  unset resp.http.Vary;
+}
+`,
+  }));
+
   // Add 'X-Fastly-Config-Version' to responses to allow checking what's active.
   config.push(api.post(`version/${version}/header`).form({
     name: 'fastly-config-version',
