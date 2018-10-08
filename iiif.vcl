@@ -150,6 +150,11 @@ sub vcl_miss {
 
 sub vcl_deliver {
 
+  if (resp.http.X-Vary && !req.backend.is_shield) {
+    set resp.http.Vary = if(resp.http.Vary, resp.http.Vary ", " resp.http.X-Vary, resp.http.X-Vary);
+    unset resp.http.X-Vary;
+  }
+
   if (req.http.Fastly-Debug && req.http.X-IIIF-Identifier) {
     set resp.http.X-Fastly-IO-URL = req.http.X-Fastly-IO-URL;
     set resp.http.X-IIIF-Version = req.http.X-IIIF-Version;
@@ -193,7 +198,7 @@ sub vcl_error {
     set obj.http.Age = req.http.X-Age;
     set obj.http.Cache-Control = req.http.X-Cache-Control;
     set obj.http.Content-Type = req.http.Accept;
-    set obj.http.Vary = "Accept";
+    set obj.http.X-Vary = "Accept"; # Can't use Vary directly as Fastly strip the header before vcl_deliver on the shield.
 
     if (req.http.Fastly-Debug) {
       set obj.http.X-Fastly-IO-Info = req.http.X-Fastly-IO-Info;
