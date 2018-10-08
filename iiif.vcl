@@ -28,6 +28,7 @@ sub vcl_recv {
     set req.http.X-IIIF-Info = "true";
     set req.http.X-IIIF-Prefix = re.group.1;
     set req.http.X-IIIF-Identifier = re.group.2;
+    set req.http.Accept = if(req.http.Accept ~ "application/ld\+json|\*/\*", "application/ld+json", "application/json");
   } else if (req.url.path ~ "^(?:/(.+?))?/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)\.([^/]+)$") {
     # Image request
     set req.http.X-IIIF-Prefix = re.group.1;
@@ -165,7 +166,7 @@ sub vcl_deliver {
 
 #FASTLY deliver
 
-  if (req.http.X-IIIF-Info && resp.http.Content-Type != "application/json" && resp.http.Fastly-IO-Info ~ "idim=([0-9]+)x([0-9]+)") {
+  if (req.http.X-IIIF-Info && resp.http.Content-Type !~ "^application/(?:ld\+)?json$" && resp.http.Fastly-IO-Info ~ "idim=([0-9]+)x([0-9]+)") {
     set req.http.X-Age = resp.http.Age;
     set req.http.X-Cache-Control = resp.http.Cache-Control;
     set req.http.X-Fastly-IO-Info = resp.http.Fastly-IO-Info;
@@ -191,7 +192,8 @@ sub vcl_error {
     set obj.http.Access-Control-Allow-Origin = "*";
     set obj.http.Age = req.http.X-Age;
     set obj.http.Cache-Control = req.http.X-Cache-Control;
-    set obj.http.Content-Type = "application/json";
+    set obj.http.Content-Type = req.http.Accept;
+    set obj.http.Vary = "Accept";
 
     if (req.http.Fastly-Debug) {
       set obj.http.X-Fastly-IO-Info = req.http.X-Fastly-IO-Info;
@@ -208,7 +210,8 @@ sub vcl_error {
             "jpg"
           ],
           "supports": [
-            "cors"
+            "cors",
+            "jsonldMediaType"
           ]
         }
       ],
