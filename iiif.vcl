@@ -150,7 +150,7 @@ sub vcl_miss {
 
 sub vcl_deliver {
 
-  if (resp.http.X-Vary && !req.backend.is_shield) {
+  if (resp.http.X-Vary && !req.http.Fastly-FF) {
     set resp.http.Vary = if(resp.http.Vary, resp.http.Vary ", " resp.http.X-Vary, resp.http.X-Vary);
     unset resp.http.X-Vary;
   }
