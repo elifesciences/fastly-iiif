@@ -58,7 +58,9 @@ sub vcl_recv {
     # Image request
     if (req.http.X-IIIF-Region == "full") {
       // Do nothing
-    } else if (req.http.X-IIIF-Region ~ "^(?:square|\d+,\d+(?:,[1-9]\d*){2}|pct:(?:[1-9]?\d(?:\.\d+)?),(?:\d{1,2}(?:\.\d+)?)(?:,(?:(?:0(?:\.0*[1-9]\d*))|(?:[1-9][0-9]?(?:\.0*[1-9]\d*)?)|(?:100(?:\.0+)?))){2})$") {
+    } else if (req.http.X-IIIF-Region ~ "^([1-9]\d*|0),([1-9]\d*|0),([1-9]\d*),([1-9]\d*)$") {
+        set req.http.X-Fastly-IO-Crop = re.group.3 "," re.group.4 ",x" re.group.1 ",y" re.group.2;
+    } else if (req.http.X-IIIF-Region ~ "^(?:square|pct:(?:[1-9]?\d(?:\.\d+)?),(?:\d{1,2}(?:\.\d+)?)(?:,(?:(?:0(?:\.0*[1-9]\d*))|(?:[1-9][0-9]?(?:\.0*[1-9]\d*)?)|(?:100(?:\.0+)?))){2})$") {
       error 400 "Unsupported region parameter";
     } else {
       error 400 "Invalid region parameter";
@@ -95,7 +97,12 @@ sub vcl_recv {
     } else {
       error 400 "Invalid format parameter";
     }
+
     set req.url = req.url "?format=" req.http.X-Fastly-IO-Format;
+
+    if (req.http.X-Fastly-IO-Crop) {
+      set req.url = req.url "&crop=" req.http.X-Fastly-IO-Crop;
+    }
   }
 
   set req.http.X-Fastly-IO-URL = req.url;
@@ -208,7 +215,8 @@ sub vcl_error {
             "jpg"
           ],
           "supports": [
-            "cors"
+            "cors",
+            "regionByPx"
           ]
         }
       ],
@@ -244,6 +252,7 @@ sub iiif_backend_fetch {
 
   if (!req.backend.is_shield) {
     unset bereq.http.host;
+    unset bereq.http.X-Fastly-IO-Crop;
     unset bereq.http.X-Fastly-IO-Format;
     unset bereq.http.X-Fastly-IO-URL;
     unset bereq.http.X-IIIF-Version;
