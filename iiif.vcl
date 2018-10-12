@@ -28,7 +28,7 @@ sub vcl_recv {
     set req.http.X-IIIF-Info = "true";
     set req.http.X-IIIF-Prefix = re.group.1;
     set req.http.X-IIIF-Identifier = re.group.2;
-    set req.http.Accept = if(req.http.Accept ~ "application/ld\+json|\*/\*", "application/ld+json", "application/json");
+    set req.http.Accept = if(req.http.Accept ~ "application/ld\+json", "application/ld+json", "application/json");
   } else if (req.url.path ~ "^(?:/(.+?))?/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)\.([^/]+)$") {
     # Image request
     set req.http.X-IIIF-Prefix = re.group.1;

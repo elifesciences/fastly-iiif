@@ -288,7 +288,7 @@ const tests = (client) => {
         {
           age: undefined,
           'cache-control': 'max-age=3600, public',
-          'content-type': 'application/ld+json',
+          'content-type': 'application/json',
         },
       ],
       [
@@ -311,7 +311,7 @@ const tests = (client) => {
         '/kittehs',
         'more%2Fcat-manipulating.jpg',
         {
-          accept: 'application/json, */*',
+          accept: 'application/ld+json;q=0.1, */*',
         },
         {
           width: 3264,
