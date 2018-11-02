@@ -9,7 +9,7 @@
     "eslint-plugin-import": "^2.14",
     "eslint-plugin-jest": "^21.22.0",
     "expect": "^23.5",
-    "jest": "^23.5",
+    "jest": "^23.6.0",
     "jest-environment-node": "^23.4",
     "p-retry": "^2.0",
     "promise-fs": "^1.3",
