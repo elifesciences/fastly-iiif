@@ -53,9 +53,11 @@ const tests = (client) => {
     describe('Region parameter', () => {
       const supported = [
         ['full', '/pug-life.jpg?format=pjpg'],
+        ['0,0,100,100', '/pug-life.jpg?format=pjpg&crop=100,100,x0,y0'],
+        ['100,100,100,100', '/pug-life.jpg?format=pjpg&crop=100,100,x100,y100'],
       ];
-      const unsupported = ['square', '0,0,100,100', '100,100,100,100', 'pct:0,0,1,1', 'pct:0,0,0.01,0.01', 'pct:0.0,0.0,100.0,100.0', 'pct:99.99,99.99,100.00,100.00'];
-      const invalid = ['-1,-1,100,100', '0,0,-1,-1', '1,1,0,0', 'pct:00,00,1,1', 'pct:0,0,01,01', 'pct:1', 'pct:1,2', 'pct:1,2,3', 'pct:1,2,3,0', 'pct:100,100,100,100', 'pct:-1,-1,-1,-1', 'pct:0,0,0,0', 'pct:0.,0.,100.,100.', 'foo'];
+      const unsupported = ['square', 'pct:0,0,1,1', 'pct:0,0,0.01,0.01', 'pct:0.0,0.0,100.0,100.0', 'pct:99.99,99.99,100.00,100.00'];
+      const invalid = ['-1,-1,100,100', '00,00,0100,0100', '0,0,-1,-1', '1,1,0,0', 'pct:00,00,1,1', 'pct:0,0,01,01', 'pct:1', 'pct:1,2', 'pct:1,2,3', 'pct:1,2,3,0', 'pct:100,100,100,100', 'pct:-1,-1,-1,-1', 'pct:0,0,0,0', 'pct:0.,0.,100.,100.', 'foo'];
 
       describe('Supported values', () => {
         test.each(supported)('%s', async (region, expected) => {
@@ -324,6 +326,7 @@ const tests = (client) => {
             ],
             supports: [
               'cors',
+              'regionByPx',
             ],
           },
         ],
