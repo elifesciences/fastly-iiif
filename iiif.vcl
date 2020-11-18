@@ -28,6 +28,7 @@ sub vcl_recv {
     set req.http.X-IIIF-Info = "true";
     set req.http.X-IIIF-Prefix = re.group.1;
     set req.http.X-IIIF-Identifier = re.group.2;
+    set req.http.Accept = if(req.http.Accept ~ "application/ld\+json", "application/ld+json", "application/json");
   } else if (req.url.path ~ "^(?:/(.+?))?/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)\.([^/]+)$") {
     # Image request
     set req.http.X-IIIF-Prefix = re.group.1;
@@ -113,7 +114,9 @@ sub vcl_fetch {
   }
 
   unset beresp.http.Set-Cookie;
-  unset beresp.http.Vary;
+  if (!req.http.X-IIIF-Info) {
+    unset beresp.http.Vary;
+  }
 
 #FASTLY fetch
 
@@ -149,6 +152,11 @@ sub vcl_miss {
 
 sub vcl_deliver {
 
+  if (resp.http.X-Vary) {
+    set resp.http.Vary = if(resp.http.Vary, resp.http.Vary ", " resp.http.X-Vary, resp.http.X-Vary);
+    unset resp.http.X-Vary;
+  }
+
   if (req.http.Fastly-Debug && req.http.X-IIIF-Identifier) {
     set resp.http.X-Fastly-IO-URL = req.http.X-Fastly-IO-URL;
     set resp.http.X-IIIF-Version = req.http.X-IIIF-Version;
@@ -165,7 +173,7 @@ sub vcl_deliver {
 
 #FASTLY deliver
 
-  if (req.http.X-IIIF-Info && resp.http.Content-Type != "application/json" && resp.http.Fastly-IO-Info ~ "idim=([0-9]+)x([0-9]+)") {
+  if (req.http.X-IIIF-Info && resp.http.Content-Type !~ "^application/(?:ld\+)?json$" && resp.http.Fastly-IO-Info ~ "idim=([0-9]+)x([0-9]+)") {
     set req.http.X-Age = resp.http.Age;
     set req.http.X-Cache-Control = resp.http.Cache-Control;
     set req.http.X-Fastly-IO-Info = resp.http.Fastly-IO-Info;
@@ -191,7 +199,8 @@ sub vcl_error {
     set obj.http.Access-Control-Allow-Origin = "*";
     set obj.http.Age = req.http.X-Age;
     set obj.http.Cache-Control = req.http.X-Cache-Control;
-    set obj.http.Content-Type = "application/json";
+    set obj.http.Content-Type = req.http.Accept;
+    set obj.http.X-Vary = "Accept"; # Can't use Vary directly as Fastly strip the header before vcl_deliver on the shield.
 
     if (req.http.Fastly-Debug) {
       set obj.http.X-Fastly-IO-Info = req.http.X-Fastly-IO-Info;
@@ -208,7 +217,8 @@ sub vcl_error {
             "jpg"
           ],
           "supports": [
-            "cors"
+            "cors",
+            "jsonldMediaType"
           ]
         }
       ],

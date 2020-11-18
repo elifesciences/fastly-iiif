@@ -261,6 +261,7 @@ const tests = (client) => {
       [
         '',
         'pug-instagram.jpg',
+        {},
         {
           width: 1229,
           height: 922,
@@ -268,6 +269,7 @@ const tests = (client) => {
         {
           age: undefined,
           'cache-control': 'no-cache, no-store, must-revalidate',
+          'content-type': 'application/json',
         },
         [
           'surrogate-control',
@@ -277,17 +279,24 @@ const tests = (client) => {
         '',
         'pug-life.jpg',
         {
+          accept: '*/*',
+        },
+        {
           width: 2000,
           height: 1333,
         },
         {
           age: undefined,
           'cache-control': 'max-age=3600, public',
+          'content-type': 'application/json',
         },
       ],
       [
         '/kittehs',
         'pop6.jpg',
+        {
+          accept: 'application/xml',
+        },
         {
           width: 4288,
           height: 2848,
@@ -295,23 +304,28 @@ const tests = (client) => {
         {
           age: undefined, // TTL set in VCL
           'cache-control': 'no-store, must-revalidate, private',
+          'content-type': 'application/json',
         },
       ],
       [
         '/kittehs',
         'more%2Fcat-manipulating.jpg',
         {
+          accept: 'application/ld+json;q=0.1, */*',
+        },
+        {
           width: 3264,
           height: 2448,
         },
         {
           age: undefined,
+          'content-type': 'application/ld+json',
         },
         [
           'cache-control',
         ],
       ],
-    ])('%s/%s/info.json', async (prefix, identifier, requiredJson, requiredHeaders = {}, notHeaders = []) => {
+    ])('%s/%s/info.json', async (prefix, identifier, headers, requiredJson, requiredHeaders = {}, notHeaders = []) => {
       const json = Object.assign({
         '@context': 'http://iiif.io/api/image/2/context.json',
         '@id': `${baseUrl}${prefix}/${identifier}`,
@@ -324,27 +338,28 @@ const tests = (client) => {
             ],
             supports: [
               'cors',
+              'jsonldMediaType',
             ],
           },
         ],
       }, requiredJson);
 
-      const response = await client.get(`${prefix}/${identifier}/info.json`);
+      const response = await client({ uri: `${prefix}/${identifier}/info.json`, headers });
 
       expect(response.statusCode).toBe(200);
-      expect(response.headers['content-type']).toBe('application/json');
+      expect(response.headers.vary).toBe('Accept');
       expect(JSON.parse(response.body)).toEqual(json);
       expect(response.headers['access-control-allow-origin']).toBe('*');
 
-      const headers = Object.keys(requiredHeaders)
+      const responseHeaders = Object.keys(requiredHeaders)
         .filter(k => requiredHeaders[k] === undefined);
 
       const headerValues = Object.keys(requiredHeaders)
         .filter(k => requiredHeaders[k] !== undefined)
         .reduce((newObj, k) => Object.assign(newObj, { [k]: requiredHeaders[k] }), {});
 
-      if (headers.length > 0) {
-        expect(Object.keys(response.headers)).toEqual(expect.arrayContaining(headers));
+      if (responseHeaders.length > 0) {
+        expect(Object.keys(response.headers)).toEqual(expect.arrayContaining(responseHeaders));
       }
       if (notHeaders.length > 0) {
         expect(Object.keys(response.headers)).not.toEqual(expect.arrayContaining(notHeaders));

@@ -82,12 +82,30 @@ const setUp = async () => {
   }));
 
   // Make sure all responses have 'Vary: X-Test-Run' to avoid conflicts between test runs.
-  config.push(api.post(`version/${version}/header`).form({
-    name: 'vary-test-run',
-    type: 'cache',
-    action: 'append',
-    dst: 'http.Vary',
-    src: '"X-Test-Run"',
+  config.push(api.post(`version/${version}/snippet`).form({
+    name: 'Vary X-Test-Run',
+    dynamic: 0,
+    type: 'fetch',
+    content: `
+if (!beresp.http.Vary) {
+  set beresp.http.Vary = "X-Test-Run";
+} else {
+  set beresp.http.Vary = beresp.http.Vary ", X-Test-Run";
+}
+`,
+  }));
+
+  // Remove X-Test-Run from response.
+  config.push(api.post(`version/${version}/snippet`).form({
+    name: 'Remove Vary X-Test-Run',
+    dynamic: 0,
+    type: 'deliver',
+    content: `
+set resp.http.Vary = regsub(resp.http.Vary, "(?:\\s*,)?\\s*X-Test-Run\\s*", "");
+if (resp.http.Vary ~ "^\\s*$") {
+  unset resp.http.Vary;
+}
+`,
   }));
 
   // Add 'X-Fastly-Config-Version' to responses to allow checking what's active.
